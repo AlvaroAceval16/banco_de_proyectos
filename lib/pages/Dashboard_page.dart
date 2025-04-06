@@ -1,23 +1,12 @@
 import 'package:flutter/material.dart';
 
-void main() => runApp(MyApp());
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Banco de Proyectos',
-      debugShowCheckedModeBanner: false,
-      home: DashboardScreen(),
-    );
-  }
-}
-
+//Crear el drawer(Menu lateral)
 class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      //Appbar(la barrita de arriba donde va el titulo y el boton de la barra lateral) ya se puede copiar y pegar quiza hacer hasta componente.
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
