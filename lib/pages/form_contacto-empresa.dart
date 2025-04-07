@@ -52,7 +52,7 @@ class _FormularioContactoEmpresaState extends State<FormularioContactoEmpresa> {
   Widget build(BuildContext context) {
     final inputDecoration = InputDecoration(
       filled: true,
-      fillColor: Color(0xFFF3F3F3),
+      fillColor: Color.fromARGB(80, 147, 143, 153),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0), borderSide: BorderSide.none),
     );
 
@@ -94,11 +94,11 @@ class _FormularioContactoEmpresaState extends State<FormularioContactoEmpresa> {
                      ),
                   ),
               SizedBox(height: 10),
-              _campoTexto("Nombre del Contacto", "Chuy",nombreController, inputDecoration),
-              _campoTexto("Apellido paterno", "ToroMax",apellidoPaternoController, inputDecoration),
-              _campoTexto("Apellido materno", "PataBionica",apellidoMaternoController, inputDecoration),
+              _campoTexto("Nombre del Contacto", "Alvaro",nombreController, inputDecoration),
+              _campoTexto("Apellido paterno", "Aceval",apellidoPaternoController, inputDecoration),
+              _campoTexto("Apellido materno", "Morales",apellidoMaternoController, inputDecoration),
               _campoTexto("Teléfono de contacto", "6182991675",telefonoController, inputDecoration, keyboardType: TextInputType.phone),
-              _campoTexto("Correo electrónico", "PussyDestroyerxXx@gmail.com",correoController, inputDecoration, keyboardType: TextInputType.emailAddress),
+              _campoTexto("Correo electrónico", "morales@empresarial.com",correoController, inputDecoration, keyboardType: TextInputType.emailAddress),
               SizedBox(height: 20),
               Text("Datos de Empresa",
                 style: TextStyle(

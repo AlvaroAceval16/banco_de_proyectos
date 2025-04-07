@@ -35,7 +35,7 @@ class _FormularioProyectoState extends State<FormularioProyecto> {
 
   final inputDecoration = InputDecoration(
     filled: true,
-    fillColor: Color(0xFFF3F3F3),
+    fillColor: Color.fromARGB(80, 147, 143, 153),
     border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0), borderSide: BorderSide.none),
   );
 
@@ -70,11 +70,11 @@ class _FormularioProyectoState extends State<FormularioProyecto> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _seccion("Datos Básicos"),
-              _campoTexto("Nombre del Proyecto", "Residencia en el dulce mamitas", nombreProyectoController),
+              _campoTexto("Nombre del Proyecto", "Aplicacion web", nombreProyectoController),
               _comboBox("Carrera","ISC", carreraSeleccionada, ["Sistemas", "Industrial", "Electrónica"], (val) {
                 setState(() => carreraSeleccionada = val);
               }),
-              _campoTexto("Descripción", "una experiencia de una luna bella:)", descripcionController, maxLines: 4),
+              _campoTexto("Descripción", "Desarrollar una app para la compañia", descripcionController, maxLines: 4),
               _comboBox("Periodo semestral","ENE-JUN", periodoSeleccionado, ["ENE-JUN", "AGO-DIC"], (val) {
                 setState(() => periodoSeleccionado = val);
               }),
@@ -83,11 +83,11 @@ class _FormularioProyectoState extends State<FormularioProyecto> {
               SizedBox(height: 20),
               _seccion("Detalles del Proyecto"),
               _campoTexto("Tipo de Proyecto", "Base de Datos", TextEditingController()),
-              _campoTexto("¿Apoyo económico?", "mil kina", apoyoController),
+              _campoTexto("¿Apoyo económico?", "2000 (mensualmente)", apoyoController),
               _comboBox("Plazos de Entrega","12 meses", plazoSeleccionado, ["1 mes", "2 meses", "3 meses"], (val) {
                 setState(() => plazoSeleccionado = val);
               }),
-              _campoTexto("Tecnologías", "Pyton", tecnologiasController),
+              _campoTexto("Tecnologías", "java", tecnologiasController),
               _comboBox("Modalidad","Presencial", modalidadSeleccionada, ["Presencial", "Virtual", "Mixta"], (val) {
                 setState(() => modalidadSeleccionada = val);
               }),
