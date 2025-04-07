@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
         textTheme: GoogleFonts.poppinsTextTheme(),
       ),
       title: 'Material App',
-      home: FormularioProyecto(),
+      home: DashboardScreen(),
     );
   }
 }
