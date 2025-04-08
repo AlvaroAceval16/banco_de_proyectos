@@ -1,3 +1,4 @@
+import 'package:banco_de_proyectos/pages/Dashboard_page.dart';
 import 'package:banco_de_proyectos/pages/form_empresa.dart';
 import 'package:banco_de_proyectos/pages/form_proyecto.dart';
 import 'package:banco_de_proyectos/pages/info_contacto-empresa.dart';
@@ -18,7 +19,7 @@ class MyApp extends StatelessWidget {
         textTheme: GoogleFonts.poppinsTextTheme(),
       ),
       title: 'Material App',
-      home: InfoContactoEmpresa(),
+      home: DashboardScreen(),
     );
   }
 }
