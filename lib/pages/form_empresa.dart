@@ -159,7 +159,7 @@ class _FormularioEmpresaState extends State<FormularioEmpresa> {
         Text(
           titulo,
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 23,
             fontFamily: 'Poppins',
             fontWeight: FontWeight.w600,
           ),
