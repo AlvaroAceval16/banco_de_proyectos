@@ -1,3 +1,4 @@
+import 'package:banco_de_proyectos/consts/text_styles.dart';
 import 'package:banco_de_proyectos/components/main_drawer.dart';
 import 'package:flutter/material.dart';
 
@@ -32,11 +33,8 @@ class DashboardScreen extends StatelessWidget {
           children: [
             Text(
               "Bienvenido Aníbal!",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Poppins',
-              ),
+              style: titleStyle
+      
             ),
             Text(
               "Explorar proyectos",
@@ -60,26 +58,21 @@ class DashboardScreen extends StatelessWidget {
               "Estadísticas generales",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 16,
+                fontSize: 20,
                 fontFamily: 'Poppins',
               ),
             ),
             SizedBox(height: 10),
             Row(
               children: [
-                _statsCard(
-                  Icons.folder,
-                  "Proyectos totales",
-                  "10",
-                  "+2 esta semana",
-                ),
+                _statsCard(Icons.folder_outlined, "Proyectos totales", "10", "+2 esta semana"),
                 SizedBox(width: 10),
                 _summaryCard(),
               ],
             ),
             SizedBox(height: 30),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Text(
                   "Últimos proyectos",
@@ -136,26 +129,10 @@ class DashboardScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Icon(icon, color: Colors.blue),
-            Text(
-              title,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Poppins',
-              ),
-            ),
-            Text(
-              number,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Poppins',
-              ),
-            ),
-            Text(
-              subtitle,
-              style: TextStyle(color: Colors.green, fontFamily: 'Poppins'),
-            ),
+            Icon(icon, color: Colors.black),
+            Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Poppins', fontSize: 16,)),
+            Text(number, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
+            Text(subtitle, style: TextStyle(color: Colors.green, fontFamily: 'Poppins')),
             Align(
               alignment: Alignment.centerRight,
               child: Text(
@@ -181,22 +158,9 @@ class DashboardScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Icon(Icons.pie_chart, color: Colors.blue),
-            Text(
-              "Resumen",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Poppins',
-              ),
-            ),
-            Text(
-              "10",
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Poppins',
-              ),
-            ),
+            Icon(Icons.pie_chart, color: Colors.black),
+            Text("Resumen", style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
+            Text("10", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
             Text(
               "• 6 Activos\n• 1 En revisión\n• 2 Finalizados",
               textAlign: TextAlign.center,
