@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 
-//Crear el drawer(Menu lateral)
 class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      //Appbar(la barrita de arriba donde va el titulo y el boton de la barra lateral) ya se puede copiar y pegar quiza hacer hasta componente.
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
@@ -15,7 +13,14 @@ class DashboardScreen extends StatelessWidget {
           children: [
             Icon(Icons.menu, color: Colors.black),
             SizedBox(width: 10),
-            Text("Banco de Proyectos", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+            Text(
+              "Banco de Proyectos",
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Poppins',
+              ),
+            ),
           ],
         ),
       ),
@@ -24,8 +29,18 @@ class DashboardScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Bienvenido Aníbal!", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            Text("Explorar proyectos", style: TextStyle(color: Colors.grey[600])),
+            Text(
+              "Bienvenido Aníbal!",
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Poppins',
+              ),
+            ),
+            Text(
+              "Explorar proyectos",
+              style: TextStyle(color: Colors.grey[600], fontFamily: 'Poppins'),
+            ),
             SizedBox(height: 20),
             TextField(
               decoration: InputDecoration(
@@ -33,11 +48,20 @@ class DashboardScreen extends StatelessWidget {
                 prefixIcon: Icon(Icons.search),
                 filled: true,
                 fillColor: Colors.grey[200],
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    borderSide: BorderSide.none),
               ),
             ),
             SizedBox(height: 30),
-            Text("Estadísticas generales", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(
+              "Estadísticas generales",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                fontFamily: 'Poppins',
+              ),
+            ),
             SizedBox(height: 10),
             Row(
               children: [
@@ -50,7 +74,14 @@ class DashboardScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Últimos proyectos", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text(
+                  "Últimos proyectos",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
                 Icon(Icons.arrow_forward),
               ],
             ),
@@ -59,7 +90,14 @@ class DashboardScreen extends StatelessWidget {
             _projectItem("Proyecto B", "20 abr."),
             _projectItem("Proyecto C", "10 abr."),
             SizedBox(height: 30),
-            Text("Acciones Rápidas", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(
+              "Acciones Rápidas",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                fontFamily: 'Poppins',
+              ),
+            ),
             SizedBox(height: 10),
             Row(
               children: [
@@ -77,21 +115,23 @@ class DashboardScreen extends StatelessWidget {
   Widget _statsCard(IconData icon, String title, String number, String subtitle) {
     return Expanded(
       child: Container(
+        height: 200,
         padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Color(0xFFF3F4F6),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Icon(icon, color: Colors.blue),
-            SizedBox(height: 8),
-            Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
-            SizedBox(height: 8),
-            Text(number, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-            Text(subtitle, style: TextStyle(color: Colors.green)),
-            SizedBox(height: 8),
-            Align(alignment: Alignment.centerRight, child: Text("Ver todo", style: TextStyle(color: Colors.grey))),
+            Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
+            Text(number, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
+            Text(subtitle, style: TextStyle(color: Colors.green, fontFamily: 'Poppins')),
+            Align(
+              alignment: Alignment.centerRight,
+              child: Text("Ver todo", style: TextStyle(color: Colors.grey, fontFamily: 'Poppins')),
+            ),
           ],
         ),
       ),
@@ -101,22 +141,27 @@ class DashboardScreen extends StatelessWidget {
   Widget _summaryCard() {
     return Expanded(
       child: Container(
+        height: 200,
         padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Color(0xFFF3F4F6),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Icon(Icons.pie_chart, color: Colors.blue),
-            SizedBox(height: 8),
-            Text("Resumen", style: TextStyle(fontWeight: FontWeight.bold)),
-            SizedBox(height: 8),
-            Text("10", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-            SizedBox(height: 4),
-            Text("• 6 Activos\n• 1 En revisión\n• 2 Finalizados", textAlign: TextAlign.center, style: TextStyle(fontSize: 12)),
-            SizedBox(height: 8),
-            Align(alignment: Alignment.centerRight, child: Text("Ver todo", style: TextStyle(color: Colors.grey))),
+            Text("Resumen", style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
+            Text("10", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
+            Text(
+              "• 6 Activos\n• 1 En revisión\n• 2 Finalizados",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 12, fontFamily: 'Poppins'),
+            ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: Text("Ver todo", style: TextStyle(color: Colors.grey, fontFamily: 'Poppins')),
+            ),
           ],
         ),
       ),
@@ -127,12 +172,12 @@ class DashboardScreen extends StatelessWidget {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
-        title: Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text("Lorem ipsum dolor sit amet, consectetur"),
+        title: Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
+        subtitle: Text("Lorem ipsum dolor sit amet, consectetur", style: TextStyle(fontFamily: 'Poppins')),
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(date, style: TextStyle(fontWeight: FontWeight.w600)),
+            Text(date, style: TextStyle(fontWeight: FontWeight.w600, fontFamily: 'Poppins')),
             Icon(Icons.arrow_forward_ios, size: 12),
           ],
         ),
@@ -156,8 +201,8 @@ class DashboardScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
-                  Text(subtitle, style: TextStyle(fontSize: 12, color: Colors.grey[700])),
+                  Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
+                  Text(subtitle, style: TextStyle(fontSize: 12, color: Colors.grey[700], fontFamily: 'Poppins')),
                 ],
               ),
             ),
