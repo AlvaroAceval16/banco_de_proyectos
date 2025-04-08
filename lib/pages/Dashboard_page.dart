@@ -1,4 +1,5 @@
 import 'package:banco_de_proyectos/consts/text_styles.dart';
+import 'package:banco_de_proyectos/components/main_drawer.dart';
 import 'package:flutter/material.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -7,12 +8,11 @@ class DashboardScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        automaticallyImplyLeading: false,
+        automaticallyImplyLeading: true,
         backgroundColor: Colors.white,
         elevation: 0,
         title: Row(
           children: [
-            Icon(Icons.menu, color: Colors.black),
             SizedBox(width: 10),
             Text(
               "Banco de Proyectos",
@@ -25,6 +25,7 @@ class DashboardScreen extends StatelessWidget {
           ],
         ),
       ),
+      drawer: MainDrawer(),
       body: SingleChildScrollView(
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         child: Column(
@@ -47,8 +48,9 @@ class DashboardScreen extends StatelessWidget {
                 filled: true,
                 fillColor: Colors.grey[200],
                 border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    borderSide: BorderSide.none),
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: BorderSide.none,
+                ),
               ),
             ),
             SizedBox(height: 30),
@@ -110,7 +112,12 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _statsCard(IconData icon, String title, String number, String subtitle) {
+  Widget _statsCard(
+    IconData icon,
+    String title,
+    String number,
+    String subtitle,
+  ) {
     return Expanded(
       child: Container(
         height: 200,
@@ -128,7 +135,10 @@ class DashboardScreen extends StatelessWidget {
             Text(subtitle, style: TextStyle(color: Colors.green, fontFamily: 'Poppins')),
             Align(
               alignment: Alignment.centerRight,
-              child: Text("Ver todo", style: TextStyle(color: Colors.grey, fontFamily: 'Poppins')),
+              child: Text(
+                "Ver todo",
+                style: TextStyle(color: Colors.grey, fontFamily: 'Poppins'),
+              ),
             ),
           ],
         ),
@@ -158,7 +168,10 @@ class DashboardScreen extends StatelessWidget {
             ),
             Align(
               alignment: Alignment.centerRight,
-              child: Text("Ver todo", style: TextStyle(color: Colors.grey, fontFamily: 'Poppins')),
+              child: Text(
+                "Ver todo",
+                style: TextStyle(color: Colors.grey, fontFamily: 'Poppins'),
+              ),
             ),
           ],
         ),
@@ -170,12 +183,24 @@ class DashboardScreen extends StatelessWidget {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
-        title: Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
-        subtitle: Text("Lorem ipsum dolor sit amet, consectetur", style: TextStyle(fontFamily: 'Poppins')),
+        title: Text(
+          title,
+          style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+        ),
+        subtitle: Text(
+          "Lorem ipsum dolor sit amet, consectetur",
+          style: TextStyle(fontFamily: 'Poppins'),
+        ),
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(date, style: TextStyle(fontWeight: FontWeight.w600, fontFamily: 'Poppins')),
+            Text(
+              date,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Poppins',
+              ),
+            ),
             Icon(Icons.arrow_forward_ios, size: 12),
           ],
         ),
@@ -199,8 +224,21 @@ class DashboardScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
-                  Text(subtitle, style: TextStyle(fontSize: 12, color: Colors.grey[700], fontFamily: 'Poppins')),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[700],
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
                 ],
               ),
             ),
