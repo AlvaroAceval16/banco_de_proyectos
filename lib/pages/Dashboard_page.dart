@@ -1,6 +1,8 @@
 import 'package:banco_de_proyectos/consts/text_styles.dart';
 import 'package:banco_de_proyectos/components/main_drawer.dart';
+import 'package:banco_de_proyectos/components/dashbord_card.dart';
 import 'package:flutter/material.dart';
+
 
 class DashboardScreen extends StatelessWidget {
   @override
@@ -33,8 +35,7 @@ class DashboardScreen extends StatelessWidget {
           children: [
             Text(
               "Bienvenido Aníbal!",
-              style: titleStyle
-      
+              style: titleStyle,
             ),
             Text(
               "Explorar proyectos",
@@ -58,17 +59,29 @@ class DashboardScreen extends StatelessWidget {
               "Estadísticas generales",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 20,
+                fontSize: 16,
                 fontFamily: 'Poppins',
               ),
             ),
             SizedBox(height: 10),
-            Row(
-              children: [
-                _statsCard(Icons.folder_outlined, "Proyectos totales", "10", "+2 esta semana"),
-                SizedBox(width: 10),
-                _summaryCard(),
-              ],
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal, 
+              child: Row(
+                children: [
+                  StatsCard(icon: Icons.folder_outlined, title: "Proyectos totales", number: "20", subtitle: "+2 esta semana",),
+                  SizedBox(width: 10),
+                  StatsCard(icon: Icons.show_chart, title: "Proyectos activos", number: "5", subtitle: "+3 esta semana",),
+                  SizedBox(width: 10),
+                  StatsCard(icon: Icons.person, title: "Proyectos en revisión", number: "12", subtitle: "+3 esta semana",),
+                  SizedBox(width: 10),
+                  StatsCard(
+                    icon: Icons.pie_chart,
+                    title: "Proyectos finalizados",
+                    number: "3",
+                    subtitle: "+1 esta semana",
+                  ),
+                ],
+              ),
             ),
             SizedBox(height: 30),
             Row(
@@ -105,73 +118,6 @@ class DashboardScreen extends StatelessWidget {
                 SizedBox(width: 10),
                 _quickAction("Empresas", "Agregar nueva empresa"),
               ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _statsCard(
-    IconData icon,
-    String title,
-    String number,
-    String subtitle,
-  ) {
-    return Expanded(
-      child: Container(
-        height: 200,
-        padding: EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Color(0xFFF3F4F6),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Icon(icon, color: Colors.black),
-            Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Poppins', fontSize: 16,)),
-            Text(number, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
-            Text(subtitle, style: TextStyle(color: Colors.green, fontFamily: 'Poppins')),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                "Ver todo",
-                style: TextStyle(color: Colors.grey, fontFamily: 'Poppins'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _summaryCard() {
-    return Expanded(
-      child: Container(
-        height: 200,
-        padding: EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Color(0xFFF3F4F6),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Icon(Icons.pie_chart, color: Colors.black),
-            Text("Resumen", style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
-            Text("10", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
-            Text(
-              "• 6 Activos\n• 1 En revisión\n• 2 Finalizados",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, fontFamily: 'Poppins'),
-            ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                "Ver todo",
-                style: TextStyle(color: Colors.grey, fontFamily: 'Poppins'),
-              ),
             ),
           ],
         ),
