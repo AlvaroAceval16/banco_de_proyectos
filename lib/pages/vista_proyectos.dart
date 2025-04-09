@@ -13,7 +13,7 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
     8,
     (index) => {
       'empresa': 'Proyecto ${String.fromCharCode(65 + index)}',
-      'descripcion': 'Descripción pequeña'
+      'descripcion': 'Descripción pequeña',
     },
   );
 
@@ -40,9 +40,7 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
   Widget build(BuildContext context) {
     return Theme(
       data: Theme.of(context).copyWith(
-        textTheme: Theme.of(context).textTheme.apply(
-              fontFamily: 'Poppins',
-            ),
+        textTheme: Theme.of(context).textTheme.apply(fontFamily: 'Poppins'),
       ),
       child: Scaffold(
         drawer: Drawer(
@@ -63,7 +61,10 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
                     children: [
                       const Text(
                         'Filtros',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       IconButton(
                         icon: const Icon(Icons.arrow_back),
@@ -109,7 +110,7 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
                         child: const Text('Cancelar'),
                       ),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),
@@ -124,10 +125,11 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
           ),
           actions: [
             Builder(
-              builder: (context) => IconButton(
-                icon: const Icon(Icons.tune),
-                onPressed: () => Scaffold.of(context).openDrawer(),
-              ),
+              builder:
+                  (context) => IconButton(
+                    icon: const Icon(Icons.tune),
+                    onPressed: () => Scaffold.of(context).openDrawer(),
+                  ),
             ),
           ],
         ),
@@ -154,6 +156,8 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
                   itemBuilder: (context, index) {
                     final proyecto = proyectosFiltrados[index];
                     return Card(
+                      color: Theme.of(context).cardColor,
+                      elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -162,13 +166,14 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
                         title: Text(proyecto['empresa']!),
                         subtitle: Text(proyecto['descripcion']!),
                         trailing: const Icon(Icons.arrow_forward_ios),
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            //Cambiar esto para que me lleve a la info de proyectos
-                            builder: (context) => const InfoProyecto(),
-                          ),
-                        ),
+                        onTap:
+                            () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                //Cambiar esto para que me lleve a la info de proyectos
+                                builder: (context) => InfoProyecto(),
+                              ),
+                            ),
                       ),
                     );
                   },
@@ -208,16 +213,6 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
         });
       },
       activeColor: Colors.green,
-    );
-  }
-}
-
-class InfoProyecto extends StatelessWidget {
-  const InfoProyecto({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
     );
   }
 }
