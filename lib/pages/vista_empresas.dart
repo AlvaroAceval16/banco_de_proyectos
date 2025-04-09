@@ -1,3 +1,4 @@
+import 'package:banco_de_proyectos/pages/info_empresa.dart';
 import 'package:flutter/material.dart';
 
 class ResumenEmpresasPage extends StatefulWidget {
@@ -154,7 +155,7 @@ class _ResumenEmpresasPageState extends State<ResumenEmpresasPage> {
                           context,
                           MaterialPageRoute(
                             //Cambiar esta madre para que vaya a la informacion de empresas
-                            builder: (context) => const InfoEmpresa(),
+                            builder: (context) => InfoEmpresa(),
                           ),
                         ),
                       ),
@@ -196,16 +197,6 @@ class _ResumenEmpresasPageState extends State<ResumenEmpresasPage> {
         });
       },
       activeColor: Colors.green,
-    );
-  }
-}
-
-class InfoEmpresa extends StatelessWidget {
-  const InfoEmpresa({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
     );
   }
 }
