@@ -46,19 +46,25 @@ class MainDrawer extends StatelessWidget {
             leading: Icon(Icons.business_outlined),
             title: Text('Empresas'),
             onTap: () {
-              Navigator.pop(context);
+              Navigator.pop(context); // Cierra el Drawer primero
+              Future.delayed(const Duration(milliseconds: 200), () {
+              Navigator.pushNamed(context, '/vista_empresas');
+              });
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.assignment_ind_outlined),
+            title: Text('Contacto Empresa'),
+            onTap: () {
+              Navigator.pop(context); // Cierra el Drawer primero
+              Future.delayed(const Duration(milliseconds: 200), () {
+              Navigator.pushNamed(context, '/vista_contacto_empresa');
+              });
             },
           ),
           ListTile(
             leading: Icon(Icons.analytics_outlined),
             title: Text('Reportes'),
-            onTap: () {
-              Navigator.pop(context);
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.school_outlined),
-            title: Text('Tutores'),
             onTap: () {
               Navigator.pop(context);
             },
