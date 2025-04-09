@@ -20,6 +20,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primaryColor: Colors.white,
         textTheme: GoogleFonts.poppinsTextTheme(),
@@ -42,6 +43,7 @@ class MyApp extends StatelessWidget {
         '/form_contacto_empresa': (context) => FormularioContactoEmpresa(),
         '/info_contacto_empresa': (context) => InfoContactoEmpresa(),
         '/info_proyecto': (context) => InfoProyecto(),
+        '/info_empresa': (context) => InfoEmpresa(),
         '/vista_proyectos': (context) => ResumenProyectosPage(),
         '/vista_empresas': (context) => ResumenEmpresasPage(),
         '/vista_contacto_empresa': (context) => ResumenContactoEmpresaPage(),
