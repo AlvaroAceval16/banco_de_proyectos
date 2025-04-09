@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:banco_de_proyectos/components/stats_card.dart';
 
 void main() => runApp(InfoEmpresaApp());
 
