@@ -58,7 +58,12 @@ class LoginPage extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               ElevatedButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  Navigator.pushReplacementNamed(
+                                    context,
+                                    '/dashboard',
+                                  );
+                                },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Color(0xff647AFF),
 

@@ -1,47 +1,51 @@
 import 'package:flutter/material.dart';
 
-void main() => runApp(FormularioProyectoApp());
+void main() => runApp(FormularioEmpresaApp());
 
-class FormularioProyectoApp extends StatelessWidget {
+class FormularioEmpresaApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Formulario Proyecto',
+      title: 'Formulario Empresa',
       debugShowCheckedModeBanner: false,
-      home: FormularioProyecto(),
+      home: FormularioEmpresa(),
     );
   }
 }
 
-class FormularioProyecto extends StatefulWidget {
+class FormularioEmpresa extends StatefulWidget {
   @override
-  _FormularioProyectoState createState() => _FormularioProyectoState();
+  _FormularioEmpresaState createState() => _FormularioEmpresaState();
 }
 
-class _FormularioProyectoState extends State<FormularioProyecto> {
+class _FormularioEmpresaState extends State<FormularioEmpresa> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController nombreProyectoController = TextEditingController();
+  final TextEditingController nombreEmpresaController = TextEditingController();
   final TextEditingController descripcionController = TextEditingController();
-  final TextEditingController fechaController = TextEditingController();
-  final TextEditingController apoyoController = TextEditingController();
-  final TextEditingController tecnologiasController = TextEditingController();
+  final TextEditingController giroController = TextEditingController();
+  final TextEditingController rfcController = TextEditingController();
+  final TextEditingController cpController = TextEditingController();
+  final TextEditingController direccionController = TextEditingController();
 
-  String? carreraSeleccionada;
-  String? periodoSeleccionado;
-  String? tipoProyectoSeleccionado;
-  String? plazoSeleccionado;
-  String? modalidadSeleccionada;
+  String? sectorSeleccionado;
+  String? tamanoSeleccionado;
+  String? estadoSeleccionado;
+  String? ciudadSeleccionada;
 
   final inputDecoration = InputDecoration(
     filled: true,
-    fillColor: Color.fromARGB(80, 147, 143, 153),
-    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0), borderSide: BorderSide.none),
+    fillColor: Color(0xFFF3F3F3),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10.0),
+      borderSide: BorderSide.none,
+    ),
   );
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
@@ -51,7 +55,7 @@ class _FormularioProyectoState extends State<FormularioProyecto> {
             Icon(Icons.menu, color: Colors.black),
             SizedBox(width: 10),
             Text(
-              "Formulario de Proyecto",
+              "Empresa",
               style: TextStyle(
                 fontFamily: 'Poppins',
                 fontWeight: FontWeight.w600,
@@ -70,27 +74,49 @@ class _FormularioProyectoState extends State<FormularioProyecto> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _seccion("Datos Básicos"),
-              _campoTexto("Nombre del Proyecto", "Aplicacion web", nombreProyectoController),
-              _comboBox("Carrera","ISC", carreraSeleccionada, ["Sistemas", "Industrial", "Electrónica"], (val) {
-                setState(() => carreraSeleccionada = val);
-              }),
-              _campoTexto("Descripción", "Desarrollar una app para la compañia", descripcionController, maxLines: 4),
-              _comboBox("Periodo semestral","ENE-JUN", periodoSeleccionado, ["ENE-JUN", "AGO-DIC"], (val) {
-                setState(() => periodoSeleccionado = val);
-              }),
-              _campoTexto("Fecha de Solicitud", "DD/MM/YYYY", fechaController, keyboardType: TextInputType.datetime),
+              _campoTexto("Nombre de la empresa", "Nombre S.A. de C.V.", nombreEmpresaController),
+              _campoTexto("Descripción", "Descripción general de la empresa", descripcionController, maxLines: 4),
 
-              SizedBox(height: 20),
-              _seccion("Detalles del Proyecto"),
-              _campoTexto("Tipo de Proyecto", "Base de Datos", TextEditingController()),
-              _campoTexto("¿Apoyo económico?", "2000 (mensualmente)", apoyoController),
-              _comboBox("Plazos de Entrega","12 meses", plazoSeleccionado, ["1 mes", "2 meses", "3 meses"], (val) {
-                setState(() => plazoSeleccionado = val);
+              _seccion("Detalles de la Empresa"),
+              _comboBox("Sector/Industria", "Seleccionar", sectorSeleccionado, [
+                "Tecnología",
+                "Salud",
+                "Educación",
+                "Finanzas",
+                "Otro"
+              ], (val) {
+                setState(() => sectorSeleccionado = val);
               }),
-              _campoTexto("Tecnologías", "java", tecnologiasController),
-              _comboBox("Modalidad","Presencial", modalidadSeleccionada, ["Presencial", "Virtual", "Mixta"], (val) {
-                setState(() => modalidadSeleccionada = val);
+              _campoTexto("Giro de la empresa", "Comercialización de software", giroController),
+              _comboBox("Tamaño de la empresa", "Seleccionar", tamanoSeleccionado, [
+                "Micro",
+                "Pequeña",
+                "Mediana",
+                "Grande"
+              ], (val) {
+                setState(() => tamanoSeleccionado = val);
               }),
+              _campoTexto("RFC", "ABC123456789", rfcController),
+
+              _seccion("Ubicación"),
+              _campoTexto("CP", "58000", cpController),
+              _comboBox("Estado", "Seleccionar", estadoSeleccionado, [
+                "Michoacán",
+                "Jalisco",
+                "CDMX",
+                "Nuevo León"
+              ], (val) {
+                setState(() => estadoSeleccionado = val);
+              }),
+              _comboBox("Ciudad", "Seleccionar", ciudadSeleccionada, [
+                "Morelia",
+                "Guadalajara",
+                "Monterrey",
+                "CDMX"
+              ], (val) {
+                setState(() => ciudadSeleccionada = val);
+              }),
+              _campoTexto("Dirección", "Av. Tecnológico 1234", direccionController),
 
               SizedBox(height: 20),
               SizedBox(
@@ -98,7 +124,9 @@ class _FormularioProyectoState extends State<FormularioProyecto> {
                 child: ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Formulario válido")));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Formulario válido")),
+                      );
                     }
                   },
                   style: ElevatedButton.styleFrom(
@@ -131,7 +159,7 @@ class _FormularioProyectoState extends State<FormularioProyecto> {
         Text(
           titulo,
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 23,
             fontFamily: 'Poppins',
             fontWeight: FontWeight.w600,
           ),
@@ -169,7 +197,7 @@ class _FormularioProyectoState extends State<FormularioProyecto> {
     );
   }
 
-  Widget _comboBox(String label,String elfakinhint2, String? value, List<String> items, Function(String?) onChanged) {
+  Widget _comboBox(String label, String hint, String? value, List<String> items, Function(String?) onChanged) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Column(
@@ -187,7 +215,7 @@ class _FormularioProyectoState extends State<FormularioProyecto> {
           DropdownButtonFormField<String>(
             decoration: inputDecoration,
             value: value,
-            hint: Text(elfakinhint2),
+            hint: Text(hint),
             items: items.map((String item) {
               return DropdownMenuItem<String>(
                 value: item,
