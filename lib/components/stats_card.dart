@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class StatsCard extends StatelessWidget {
+  final Color iconColor;
   final IconData icon;
   final String title;
   final String number;
@@ -8,6 +9,7 @@ class StatsCard extends StatelessWidget {
 
   const StatsCard({
     super.key,
+    required this.iconColor,
     required this.icon,
     required this.title,
     required this.number,
@@ -30,8 +32,8 @@ class StatsCard extends StatelessWidget {
             spacing: 8,
             children: [
               CircleAvatar(
+                backgroundColor: iconColor,
                 radius: 15,
-                backgroundColor: const Color(0xFF5285E8),
                 child: Icon(icon, color: Colors.black, size: 20),
               ),
               Text(

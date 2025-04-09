@@ -66,25 +66,29 @@ class DashboardScreen extends StatelessWidget {
                 spacing: 10,
                 children: [
                   StatsCard(
+                    iconColor: const Color(0xFF5285E8),
                     icon: Icons.folder_outlined,
                     title: "Proyectos totales",
                     number: "20",
                     subtitle: "+2 esta semana",
                   ),
                   StatsCard(
+                    iconColor: Colors.red,
                     icon: Icons.show_chart,
                     title: "Proyectos activos",
                     number: "5",
                     subtitle: "+3 esta semana",
                   ),
                   StatsCard(
-                    icon: Icons.person,
+                    iconColor: Colors.orange,
+                    icon: Icons.pending_actions,
                     title: "Proyectos en revisión",
                     number: "12",
                     subtitle: "+3 esta semana",
                   ),
                   StatsCard(
-                    icon: Icons.pie_chart,
+                    iconColor: Colors.green,
+                    icon: Icons.task_outlined,
                     title: "Proyectos finalizados",
                     number: "3",
                     subtitle: "+1 esta semana",
