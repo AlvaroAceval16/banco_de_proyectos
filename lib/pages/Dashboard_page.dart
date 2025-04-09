@@ -1,8 +1,7 @@
 import 'package:banco_de_proyectos/consts/text_styles.dart';
 import 'package:banco_de_proyectos/components/main_drawer.dart';
-import 'package:banco_de_proyectos/components/dashbord_card.dart';
+import 'package:banco_de_proyectos/components/stats_card.dart';
 import 'package:flutter/material.dart';
-
 
 class DashboardScreen extends StatelessWidget {
   @override
@@ -33,10 +32,7 @@ class DashboardScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "Bienvenido Aníbal!",
-              style: titleStyle,
-            ),
+            Text("Bienvenido Aníbal!", style: titleStyle),
             Text(
               "Explorar proyectos",
               style: TextStyle(color: Colors.grey[600], fontFamily: 'Poppins'),
@@ -65,15 +61,28 @@ class DashboardScreen extends StatelessWidget {
             ),
             SizedBox(height: 10),
             SingleChildScrollView(
-              scrollDirection: Axis.horizontal, 
+              scrollDirection: Axis.horizontal,
               child: Row(
+                spacing: 10,
                 children: [
-                  StatsCard(icon: Icons.folder_outlined, title: "Proyectos totales", number: "20", subtitle: "+2 esta semana",),
-                  SizedBox(width: 10),
-                  StatsCard(icon: Icons.show_chart, title: "Proyectos activos", number: "5", subtitle: "+3 esta semana",),
-                  SizedBox(width: 10),
-                  StatsCard(icon: Icons.person, title: "Proyectos en revisión", number: "12", subtitle: "+3 esta semana",),
-                  SizedBox(width: 10),
+                  StatsCard(
+                    icon: Icons.folder_outlined,
+                    title: "Proyectos totales",
+                    number: "20",
+                    subtitle: "+2 esta semana",
+                  ),
+                  StatsCard(
+                    icon: Icons.show_chart,
+                    title: "Proyectos activos",
+                    number: "5",
+                    subtitle: "+3 esta semana",
+                  ),
+                  StatsCard(
+                    icon: Icons.person,
+                    title: "Proyectos en revisión",
+                    number: "12",
+                    subtitle: "+3 esta semana",
+                  ),
                   StatsCard(
                     icon: Icons.pie_chart,
                     title: "Proyectos finalizados",
