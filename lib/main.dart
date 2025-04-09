@@ -3,6 +3,7 @@ import 'package:banco_de_proyectos/pages/form_contacto-empresa.dart';
 import 'package:banco_de_proyectos/pages/form_empresa.dart';
 import 'package:banco_de_proyectos/pages/form_proyecto.dart';
 import 'package:banco_de_proyectos/pages/info_contacto-empresa.dart';
+import 'package:banco_de_proyectos/pages/info_proyecto.dart';
 import 'package:banco_de_proyectos/pages/login_page.dart';
 import 'package:banco_de_proyectos/pages/vista_contactos-empresa.dart';
 import 'package:banco_de_proyectos/pages/vista_empresas.dart';
@@ -21,6 +22,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primaryColor: Colors.white,
         textTheme: GoogleFonts.poppinsTextTheme(),
+        cardColor: Colors.grey[200],
+        scaffoldBackgroundColor: Color(0xFF052659),
       ),
       routes: {
         '/dashboard': (context) => DashboardScreen(),
@@ -35,7 +38,7 @@ class MyApp extends StatelessWidget {
 
       },
       title: 'Material App',
-      home: LoginPage(),
+      home: InfoProyecto(),
     );
   }
 }
