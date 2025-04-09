@@ -3,7 +3,6 @@ import 'package:banco_de_proyectos/pages/form_contacto-empresa.dart';
 import 'package:banco_de_proyectos/pages/form_empresa.dart';
 import 'package:banco_de_proyectos/pages/form_proyecto.dart';
 import 'package:banco_de_proyectos/pages/info_contacto-empresa.dart';
-import 'package:banco_de_proyectos/pages/info_proyecto.dart';
 import 'package:banco_de_proyectos/pages/login_page.dart';
 import 'package:banco_de_proyectos/pages/vista_contactos-empresa.dart';
 import 'package:banco_de_proyectos/pages/vista_empresas.dart';
@@ -22,8 +21,17 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primaryColor: Colors.white,
         textTheme: GoogleFonts.poppinsTextTheme(),
-        cardColor: Colors.grey[200],
-        scaffoldBackgroundColor: Color(0xFF052659),
+        cardColor: Colors.grey[100],
+        scaffoldBackgroundColor: Colors.white,
+        appBarTheme: AppBarTheme(
+          backgroundColor: const Color(0xFFFFFFFF),
+          titleTextStyle: TextStyle(
+            color: Colors.black,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Poppins',
+          ),
+        ),
       ),
       routes: {
         '/dashboard': (context) => DashboardScreen(),
@@ -35,10 +43,9 @@ class MyApp extends StatelessWidget {
         '/vista_empresas': (context) => ResumenEmpresasPage(),
         '/vista_contacto_empresa': (context) => ResumenContactoEmpresaPage(),
         '/login': (context) => LoginPage(),
-
       },
       title: 'Material App',
-      home: InfoProyecto(),
+      home: LoginPage(),
     );
   }
 }

@@ -4,13 +4,21 @@ class InfoProyecto extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF002A5C),
+      backgroundColor: Color(0xFF052659),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // Acción para editar
         },
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: Color(0xFF052659),
         child: Icon(Icons.edit, color: Colors.white),
+      ),
+      appBar: AppBar(
+        backgroundColor: Color(0xFF052659),
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: Column(
         children: [
@@ -20,19 +28,15 @@ class InfoProyecto extends StatelessWidget {
                 // Parte azul superior
                 Container(
                   decoration: BoxDecoration(
-                    color:
-                        Theme.of(
-                          context,
-                        ).scaffoldBackgroundColor, // azul oscuro
+                    color: Color(0xFF052659),
                     borderRadius: BorderRadius.vertical(
                       bottom: Radius.circular(20),
                     ),
                   ),
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+                  padding: EdgeInsets.only(bottom: 30, left: 20, right: 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.arrow_back, color: Colors.white),
                       SizedBox(height: 20),
                       Text(
                         "Título del Proyecto",

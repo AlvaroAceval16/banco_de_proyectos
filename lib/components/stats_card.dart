@@ -38,11 +38,7 @@ class StatsCard extends StatelessWidget {
               ),
               Text(
                 title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontFamily: 'Poppins',
-                  fontSize: 12,
-                ),
+                style: const TextStyle(fontFamily: 'Poppins', fontSize: 12),
               ),
             ],
           ),
