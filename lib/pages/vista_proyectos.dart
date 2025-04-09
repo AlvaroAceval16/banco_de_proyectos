@@ -142,7 +142,7 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
                   hintText: 'Busca tus proyectos...',
                   prefixIcon: const Icon(Icons.search),
                   filled: true,
-                  fillColor: Colors.grey.shade200,
+                  fillColor: Theme.of(context).cardColor,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(20),
                     borderSide: BorderSide.none,
@@ -163,9 +163,14 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
                       ),
                       margin: const EdgeInsets.only(bottom: 12),
                       child: ListTile(
-                        title: Text(proyecto['empresa']!),
+                        title: Text(proyecto['empresa']!,
+                        style: const TextStyle(
+                          fontFamily: 'Poppins',
+                          fontWeight: FontWeight.w500, // Semibold
+                          fontSize: 16,
+                        ),),
                         subtitle: Text(proyecto['descripcion']!),
-                        trailing: const Icon(Icons.arrow_forward_ios),
+                        trailing: const Icon(Icons.arrow_forward, size: 20,),
                         onTap:
                             () => Navigator.push(
                               context,

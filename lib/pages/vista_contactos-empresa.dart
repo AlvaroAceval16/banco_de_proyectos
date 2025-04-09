@@ -119,7 +119,7 @@ class _ResumenContactoEmpresaPageState extends State<ResumenContactoEmpresaPage>
                   hintText: 'Buscar contactos...',
                   prefixIcon: const Icon(Icons.search),
                   filled: true,
-                  fillColor: Colors.grey.shade200,
+                  fillColor: Theme.of(context).cardColor,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(20),
                     borderSide: BorderSide.none,
@@ -133,14 +133,20 @@ class _ResumenContactoEmpresaPageState extends State<ResumenContactoEmpresaPage>
                   itemBuilder: (context, index) {
                     final contacto = contactosFiltrados[index];
                     return Card(
+                      color: Theme.of(context).cardColor,
+                      elevation: 0,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                        borderRadius: BorderRadius.circular(12),                      ),
                       margin: const EdgeInsets.only(bottom: 12),
                       child: ListTile(
-                        title: Text(contacto['nombre']!),
+                        title: Text(contacto['nombre']!,
+                        style: const TextStyle(
+                          fontFamily: 'Poppins',
+                          fontWeight: FontWeight.w500, // Semibold
+                          fontSize: 16,
+                        ),),
                         subtitle: Text(contacto['descripcion']!),
-                        trailing: const Icon(Icons.arrow_forward_ios),
+                        trailing: const Icon(Icons.arrow_forward, size: 20),
                         onTap: () => Navigator.pushNamed(context, '/info_contacto_empresa'),
                       ),
                     );
