@@ -39,7 +39,7 @@ class StatsCard extends StatelessWidget {
                 style: const TextStyle(
                   fontWeight: FontWeight.w600,
                   fontFamily: 'Poppins',
-                  fontSize: 10,
+                  fontSize: 12,
                 ),
               ),
             ],
@@ -78,7 +78,7 @@ class StatsCard extends StatelessWidget {
                   fontSize: 12,
                 ),
               ),
-              Icon(Icons.arrow_forward, size: 14, color: Colors.black54),
+              Icon(Icons.arrow_forward, size: 16, color: Colors.black54),
             ],
           ),
         ],

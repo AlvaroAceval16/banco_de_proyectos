@@ -35,7 +35,7 @@ class DashboardScreen extends StatelessWidget {
             Text("Bienvenido Aníbal!", style: titleStyle),
             Text(
               "Explorar proyectos",
-              style: TextStyle(color: Colors.grey[600], fontFamily: 'Poppins'),
+              style: TextStyle(color: Colors.grey[700], fontFamily: 'Poppins'),
             ),
             SizedBox(height: 20),
             TextField(
@@ -43,7 +43,7 @@ class DashboardScreen extends StatelessWidget {
                 hintText: "Busca tus proyectos...",
                 prefixIcon: Icon(Icons.search),
                 filled: true,
-                fillColor: Colors.grey[200],
+                fillColor: const Color(0xFFF3F4F6),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20),
                   borderSide: BorderSide.none,
@@ -103,9 +103,7 @@ class DashboardScreen extends StatelessWidget {
                     fontSize: 16,
                     fontFamily: 'Poppins',
                   ),
-                ),
-                Icon(Icons.arrow_forward),
-              ],
+                ),              ],
             ),
             SizedBox(height: 10),
             _projectItem("Proyecto A", "Hoy"),
@@ -135,33 +133,49 @@ class DashboardScreen extends StatelessWidget {
   }
 
   Widget _projectItem(String title, String date) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        title: Text(
-          title,
-          style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
-        ),
-        subtitle: Text(
-          "Lorem ipsum dolor sit amet, consectetur",
-          style: TextStyle(fontFamily: 'Poppins'),
-        ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
+  return Card(
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    child: Padding(
+      padding: const EdgeInsets.all(12.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            flex: 3,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text("Lorem ipsum dolor sit amet, consectetur", style: TextStyle(fontFamily: 'Poppins', fontSize: 12, color: Colors.grey[700], fontWeight: FontWeight.w500),
+                overflow: TextOverflow.ellipsis,),
+              ],
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: Text(
               date,
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontWeight: FontWeight.w500,
                 fontFamily: 'Poppins',
               ),
             ),
-            Icon(Icons.arrow_forward_ios, size: 12),
-          ],
-        ),
+          ),
+
+          const Icon(Icons.arrow_forward, size: 16),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _quickAction(String title, String subtitle) {
     return Expanded(
@@ -179,21 +193,8 @@ class DashboardScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Poppins',
-                    ),
-                  ),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[700],
-                      fontFamily: 'Poppins',
-                    ),
-                  ),
+                  Text(title, style: TextStyle (fontWeight: FontWeight.bold, fontFamily: 'Poppins',),),
+                  Text(subtitle, style: TextStyle (fontSize: 12, color: Colors.grey[700], fontFamily: 'Poppins', fontWeight: FontWeight.w500),),
                 ],
               ),
             ),
