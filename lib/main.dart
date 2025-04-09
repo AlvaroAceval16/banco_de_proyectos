@@ -3,6 +3,7 @@ import 'package:banco_de_proyectos/pages/form_empresa.dart';
 import 'package:banco_de_proyectos/pages/form_proyecto.dart';
 import 'package:banco_de_proyectos/pages/info_contacto-empresa.dart';
 import 'package:banco_de_proyectos/pages/login_page.dart';
+import 'package:banco_de_proyectos/pages/vista_proyectos.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -23,6 +24,7 @@ class MyApp extends StatelessWidget {
         '/form_empresa': (context) => FormularioEmpresa(),
         '/form_proyecto': (context) => FormularioProyecto(),
         '/info_contacto_empresa': (context) => InfoContactoEmpresa(),
+        '/vista_proyectos': (context) => ResumenProyectosPage(),
         '/login': (context) => LoginPage(),
       },
       title: 'Material App',
