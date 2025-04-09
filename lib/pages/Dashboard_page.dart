@@ -1,5 +1,6 @@
 import 'package:banco_de_proyectos/consts/text_styles.dart';
 import 'package:banco_de_proyectos/components/main_drawer.dart';
+import 'package:banco_de_proyectos/components/stats_card.dart';
 import 'package:flutter/material.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -31,14 +32,10 @@ class DashboardScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "Bienvenido Aníbal!",
-              style: titleStyle
-      
-            ),
+            Text("Bienvenido Aníbal!", style: titleStyle),
             Text(
               "Explorar proyectos",
-              style: TextStyle(color: Colors.grey[600], fontFamily: 'Poppins'),
+              style: TextStyle(color: Colors.grey[700], fontFamily: 'Poppins'),
             ),
             SizedBox(height: 20),
             TextField(
@@ -46,7 +43,7 @@ class DashboardScreen extends StatelessWidget {
                 hintText: "Busca tus proyectos...",
                 prefixIcon: Icon(Icons.search),
                 filled: true,
-                fillColor: Colors.grey[200],
+                fillColor: const Color(0xFFF3F4F6),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20),
                   borderSide: BorderSide.none,
@@ -58,17 +55,46 @@ class DashboardScreen extends StatelessWidget {
               "Estadísticas generales",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 20,
+                fontSize: 16,
                 fontFamily: 'Poppins',
               ),
             ),
             SizedBox(height: 10),
-            Row(
-              children: [
-                _statsCard(Icons.folder_outlined, "Proyectos totales", "10", "+2 esta semana"),
-                SizedBox(width: 10),
-                _summaryCard(),
-              ],
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                spacing: 10,
+                children: [
+                  StatsCard(
+                    iconColor: const Color(0xFF5285E8),
+                    icon: Icons.folder_outlined,
+                    title: "Proyectos totales",
+                    number: "20",
+                    subtitle: "+2 esta semana",
+                  ),
+                  StatsCard(
+                    iconColor: Colors.red,
+                    icon: Icons.show_chart,
+                    title: "Proyectos activos",
+                    number: "5",
+                    subtitle: "+3 esta semana",
+                  ),
+                  StatsCard(
+                    iconColor: Colors.orange,
+                    icon: Icons.pending_actions,
+                    title: "Proyectos en revisión",
+                    number: "12",
+                    subtitle: "+3 esta semana",
+                  ),
+                  StatsCard(
+                    iconColor: Colors.green,
+                    icon: Icons.task_outlined,
+                    title: "Proyectos finalizados",
+                    number: "3",
+                    subtitle: "+1 esta semana",
+                  ),
+                ],
+              ),
             ),
             SizedBox(height: 30),
             Row(
@@ -81,9 +107,7 @@ class DashboardScreen extends StatelessWidget {
                     fontSize: 16,
                     fontFamily: 'Poppins',
                   ),
-                ),
-                Icon(Icons.arrow_forward),
-              ],
+                ),              ],
             ),
             SizedBox(height: 10),
             _projectItem("Proyecto A", "Hoy"),
@@ -112,101 +136,50 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _statsCard(
-    IconData icon,
-    String title,
-    String number,
-    String subtitle,
-  ) {
-    return Expanded(
-      child: Container(
-        height: 200,
-        padding: EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Color(0xFFF3F4F6),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Icon(icon, color: Colors.black),
-            Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Poppins', fontSize: 16,)),
-            Text(number, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
-            Text(subtitle, style: TextStyle(color: Colors.green, fontFamily: 'Poppins')),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                "Ver todo",
-                style: TextStyle(color: Colors.grey, fontFamily: 'Poppins'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _summaryCard() {
-    return Expanded(
-      child: Container(
-        height: 200,
-        padding: EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Color(0xFFF3F4F6),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Icon(Icons.pie_chart, color: Colors.black),
-            Text("Resumen", style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
-            Text("10", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
-            Text(
-              "• 6 Activos\n• 1 En revisión\n• 2 Finalizados",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, fontFamily: 'Poppins'),
-            ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                "Ver todo",
-                style: TextStyle(color: Colors.grey, fontFamily: 'Poppins'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _projectItem(String title, String date) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        title: Text(
-          title,
-          style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
-        ),
-        subtitle: Text(
-          "Lorem ipsum dolor sit amet, consectetur",
-          style: TextStyle(fontFamily: 'Poppins'),
-        ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
+  return Card(
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    child: Padding(
+      padding: const EdgeInsets.all(12.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            flex: 3,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text("Lorem ipsum dolor sit amet, consectetur", style: TextStyle(fontFamily: 'Poppins', fontSize: 12, color: Colors.grey[700], fontWeight: FontWeight.w500),
+                overflow: TextOverflow.ellipsis,),
+              ],
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: Text(
               date,
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontWeight: FontWeight.w500,
                 fontFamily: 'Poppins',
               ),
             ),
-            Icon(Icons.arrow_forward_ios, size: 12),
-          ],
-        ),
+          ),
+
+          const Icon(Icons.arrow_forward, size: 16),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _quickAction(String title, String subtitle) {
     return Expanded(
@@ -224,21 +197,8 @@ class DashboardScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Poppins',
-                    ),
-                  ),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[700],
-                      fontFamily: 'Poppins',
-                    ),
-                  ),
+                  Text(title, style: TextStyle (fontWeight: FontWeight.bold, fontFamily: 'Poppins',),),
+                  Text(subtitle, style: TextStyle (fontSize: 12, color: Colors.grey[700], fontFamily: 'Poppins', fontWeight: FontWeight.w500),),
                 ],
               ),
             ),
