@@ -9,7 +9,7 @@ class InfoProyecto extends StatelessWidget {
         onPressed: () {
           // Acción para editar
         },
-        backgroundColor: Color(0xFF052659),
+        backgroundColor: Color (0xFF5285E8),
         child: Icon(Icons.edit, color: Colors.white),
       ),
       appBar: AppBar(
