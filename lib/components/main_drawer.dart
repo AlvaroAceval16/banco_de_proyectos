@@ -36,7 +36,10 @@ class MainDrawer extends StatelessWidget {
             leading: Icon(Icons.dataset_outlined),
             title: Text('Proyectos'),
             onTap: () {
-              Navigator.pop(context);
+              Navigator.pop(context); // Cierra el Drawer primero
+              Future.delayed(const Duration(milliseconds: 200), () {
+              Navigator.pushNamed(context, '/vista_proyectos');
+              });
             },
           ),
           ListTile(
