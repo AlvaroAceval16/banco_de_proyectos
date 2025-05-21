@@ -1,8 +1,20 @@
 import 'package:banco_de_proyectos/consts/text_styles.dart';
 import 'package:flutter/material.dart';
+import 'package:banco_de_proyectos/back/empresa_service.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  @override
+  void initState() {
+    super.initState();
+    //fetchEmpresas();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,8 +27,8 @@ class LoginPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Inicia sesión', style: titleStyle),
-              SizedBox(height: 10),
-              Text(
+              const SizedBox(height: 10),
+              const Text(
                 '¡Bienvenido de nuevo!',
                 style: TextStyle(color: Colors.black54),
               ),
@@ -27,23 +39,23 @@ class LoginPage extends StatelessWidget {
                     child: Column(
                       children: [
                         TextFormField(
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             labelText: 'Correo electrónico',
                             border: OutlineInputBorder(),
                             hintText: 'Ash catsup',
                           ),
                         ),
-                        SizedBox(height: 20),
+                        const SizedBox(height: 20),
                         TextFormField(
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             labelText: 'Contraseña',
                             border: OutlineInputBorder(),
                             hintText: '********',
                           ),
                           obscureText: true,
                         ),
-                        SizedBox(height: 20),
-                        Row(
+                        const SizedBox(height: 20),
+                        const Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             Text(
@@ -54,7 +66,6 @@ class LoginPage extends StatelessWidget {
                         ),
                         Expanded(
                           child: Column(
-                            spacing: 20,
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               ElevatedButton(
@@ -65,18 +76,17 @@ class LoginPage extends StatelessWidget {
                                   );
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Color(0xff647AFF),
-
-                                  padding: EdgeInsets.symmetric(
+                                  backgroundColor: const Color(0xff647AFF),
+                                  padding: const EdgeInsets.symmetric(
                                     horizontal: 100,
                                     vertical: 15,
                                   ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(5),
                                   ),
-                                  minimumSize: Size(double.infinity, 30),
+                                  minimumSize: const Size(double.infinity, 30),
                                 ),
-                                child: Text(
+                                child: const Text(
                                   'Iniciar sesión',
                                   style: TextStyle(color: Colors.white),
                                 ),
