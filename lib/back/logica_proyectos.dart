@@ -1,6 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-final supabase = Supabase.instance.client;
+/*final supabase = Supabase.instance.client;
 
 Future<Map<String, dynamic>?> obtenerProyectoPorId(String proyectoId) async {
   try {
@@ -59,3 +59,193 @@ void cargarDatosProyecto() async {
   }
 }
 */
+*/
+
+class ProyectoService {
+  final _supabase = Supabase.instance.client;
+
+  Future<Map<String, dynamic>> guardarProyecto({
+  required String nombre,
+  required String descripcion,
+  required String? modalidad,
+  required String? carrera,
+  required String? periodo,
+  required String fechasolicitud,
+  required String apoyoeconomico,
+  required String? plazosentrega,
+  required String tecnologias,
+  int? idempresa,
+  int numeroestudiantes = 1,
+  String estado = 'Abierto',
+}) async {
+  try {
+    if (modalidad == null || carrera == null || periodo == null || plazosentrega == null) {
+      throw Exception('Todos los campos select deben tener un valor seleccionado');
+    }
+
+    final response = await _supabase.from('proyectos').insert({
+      'nombreproyecto': nombre,
+      'descripcion': descripcion,
+      'modalidad': modalidad,
+      'carreras': carrera,
+      'periodo': periodo,
+      'fechasolicitud': fechasolicitud,
+      'apoyoeconomico': apoyoeconomico,
+      'plazosentrega': plazosentrega,
+      'tecnologias': tecnologias,
+      'idempresa': idempresa ?? 1,
+      'numeroestudiantes': numeroestudiantes,
+      'estado': estado,
+      'tipoproyecto': 'Desarrollo',
+    }).select().single();
+
+    return response;
+  } catch (e) {
+    print('❌ Error al guardar proyecto: $e');
+    throw Exception('Error al guardar proyecto: ${e.toString()}');
+  }
+}
+
+  // CREATE - Insertar nuevo proyecto
+  Future<Map<String, dynamic>> crearProyecto({
+    required String nombre,
+    required String descripcion,
+    required String carrera,
+    required String periodo,
+    required String tipoproyecto,
+    required String apoyoeconomico,
+    required String plazosentrega,
+    required String tecnologias,
+    required String modalidad,
+    int? idempresa, // Opcional si no está en el formulario
+    int? numeroestudiantes, // Opcional si no está en el formulario
+  }) async {
+    try {
+      final response = await _supabase
+          .from('proyectos')
+          .insert({
+            'nombreproyecto': nombre,
+            'descripcion': descripcion,
+            'carreras': carrera,
+            'periodo': periodo,
+            'tipoproyecto': tipoproyecto,
+            'apoyoeconomico': apoyoeconomico,
+            'plazosentrega': plazosentrega,
+            'tecnologias': tecnologias,
+            'modalidad': modalidad,
+            'fechasolicitud': DateTime.now().toIso8601String(),
+            'estado': 'Abierto', // Estado por defecto
+            'idempresa': idempresa ?? 1, // Valor por defecto si no se proporciona
+            'numeroestudiantes': numeroestudiantes ?? 1, // Valor por defecto
+          })
+          .select()
+          .single();
+
+      return response;
+    } catch (e) {
+      print('❌ Error al crear proyecto: $e');
+      throw Exception('Error al crear proyecto');
+    }
+  }
+
+  // READ - Obtener proyecto por ID
+  Future<Map<String, dynamic>?> obtenerProyecto(int idproyecto) async {
+    try {
+      final response = await _supabase
+          .from('proyectos')
+          .select('''
+            *,
+            empresa:empresas(nombre, descripcion)
+          ''')
+          .eq('idproyecto', idproyecto)
+          .single();
+
+      return response;
+    } catch (e) {
+      print('❌ Error al obtener proyecto: $e');
+      return null;
+    }
+  }
+
+  // READ - Obtener todos los proyectos
+  Future<List<Map<String, dynamic>>> listarProyectos() async {
+    try {
+      final response = await _supabase
+          .from('proyectos')
+          .select('''
+            *,
+            empresa:empresas(nombre)
+          ''')
+          .order('fechasolicitud', ascending: false);
+
+      return response;
+    } catch (e) {
+      print('❌ Error al listar proyectos: $e');
+      return [];
+    }
+  }
+
+  // UPDATE - Actualizar proyecto
+  Future<void> actualizarProyecto({
+    required int idproyecto,
+    String? nombre,
+    String? descripcion,
+    String? carrera,
+    String? periodo,
+    String? tipoproyecto,
+    String? apoyoeconomico,
+    String? plazosentrega,
+    String? tecnologias,
+    String? modalidad,
+    String? estado,
+  }) async {
+    try {
+      final updates = {
+        if (nombre != null) 'nombreproyecto': nombre,
+        if (descripcion != null) 'descripcion': descripcion,
+        if (carrera != null) 'carreras': carrera,
+        if (periodo != null) 'periodo': periodo,
+        if (tipoproyecto != null) 'tipoproyecto': tipoproyecto,
+        if (apoyoeconomico != null) 'apoyoeconomico': apoyoeconomico,
+        if (plazosentrega != null) 'plazosentrega': plazosentrega,
+        if (tecnologias != null) 'tecnologias': tecnologias,
+        if (modalidad != null) 'modalidad': modalidad,
+        if (estado != null) 'estado': estado,
+      };
+
+      await _supabase
+          .from('proyectos')
+          .update(updates)
+          .eq('idproyecto', idproyecto);
+    } catch (e) {
+      print('❌ Error al actualizar proyecto: $e');
+      throw Exception('Error al actualizar proyecto');
+    }
+  }
+
+  // DELETE - Eliminar proyecto
+  Future<void> eliminarProyecto(int idproyecto) async {
+    try {
+      await _supabase
+          .from('proyectos')
+          .delete()
+          .eq('idproyecto', idproyecto);
+    } catch (e) {
+      print('❌ Error al eliminar proyecto: $e');
+      throw Exception('Error al eliminar proyecto');
+    }
+  }
+
+  // Método adicional para cambiar estado
+  Future<void> cambiarEstadoProyecto(int idproyecto, String nuevoestado) async {
+    try {
+      await _supabase
+          .from('proyectos')
+          .update({'estado': nuevoestado})
+          .eq('idproyecto', idproyecto);
+    } catch (e) {
+      print('❌ Error al cambiar estado: $e');
+      throw Exception('Error al cambiar estado del proyecto');
+    }
+  }
+}

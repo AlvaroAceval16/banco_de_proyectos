@@ -1,6 +1,13 @@
+import 'package:banco_de_proyectos/back/logica_proyectos.dart';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+final supabase = Supabase.instance.client;
+final _proyectoService = ProyectoService();
 
 void main() => runApp(FormularioProyectoApp());
+
+
 
 class FormularioProyectoApp extends StatelessWidget {
   @override
@@ -32,6 +39,43 @@ class _FormularioProyectoState extends State<FormularioProyecto> {
   String? tipoProyectoSeleccionado;
   String? plazoSeleccionado;
   String? modalidadSeleccionada;
+
+
+
+Future<void> guardarProyecto() async {
+  if (_formKey.currentState!.validate()) {
+    try {
+      await _proyectoService.guardarProyecto(
+        nombre: nombreProyectoController.text,
+        descripcion: descripcionController.text,
+        modalidad: modalidadSeleccionada,
+        carrera: carreraSeleccionada,
+        periodo: periodoSeleccionado,
+        fechasolicitud: fechaController.text,
+        apoyoeconomico: apoyoController.text,
+        plazosentrega: plazoSeleccionado,
+        tecnologias: tecnologiasController.text,
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('✅ Proyecto guardado correctamente')),
+      );
+      
+      // Opcional: Limpiar el formulario después de guardar
+      _formKey.currentState?.reset();
+      
+      // Opcional: Navegar a otra pantalla
+      // Navigator.pop(context);
+
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('❌ Error: ${e.toString()}')),
+      );
+    }
+  }
+}
+
+
 
   final inputDecoration = InputDecoration(
     filled: true,
@@ -88,7 +132,7 @@ class _FormularioProyectoState extends State<FormularioProyecto> {
                 setState(() => plazoSeleccionado = val);
               }),
               _campoTexto("Tecnologías", "java", tecnologiasController),
-              _comboBox("Modalidad","Presencial", modalidadSeleccionada, ["Presencial", "Virtual", "Mixta"], (val) {
+              _comboBox("Modalidad","Presencial", modalidadSeleccionada, ["Presencial", "Remoto", "Hibrida"], (val) {
                 setState(() => modalidadSeleccionada = val);
               }),
 
@@ -99,6 +143,7 @@ class _FormularioProyectoState extends State<FormularioProyecto> {
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Formulario válido")));
+                      guardarProyecto();
                     }
                   },
                   style: ElevatedButton.styleFrom(
