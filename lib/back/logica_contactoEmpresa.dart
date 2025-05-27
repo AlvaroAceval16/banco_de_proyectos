@@ -1,6 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-final supabase = Supabase.instance.client;
+/*final supabase = Supabase.instance.client;
 
 Future<Map<String, dynamic>?> obtenerContactoEmpresaPorId(String contactoId) async {
   try {
@@ -47,3 +47,62 @@ void cargarDatosContacto() async {
   }
 }
 */
+*/
+class ContactoService {
+  final _supabase = Supabase.instance.client;
+
+  // Crear nuevo contacto
+  Future<void> createContacto({
+    required int idEmpresa,
+    required String nombre,
+    required String apellidoPaterno,
+    required String apellidoMaterno,
+    required String telefono,
+    required String correo,
+    required String puesto,
+    required String horarioAtencion,
+    required String comentarios,
+  }) async {
+    try {
+      await _supabase.from('contactoEmpresa').insert({
+        'idEmpresa': idEmpresa,
+        'nombre': nombre,
+        'apellidoPaterno': apellidoPaterno,
+        'apellidoMaterno': apellidoMaterno,
+        'telefono': telefono,
+        'correo': correo,
+        'puesto': puesto,
+        'horarioAtencion': horarioAtencion,
+        'comentarios': comentarios,
+      });
+    } catch (e) {
+      throw Exception('Error al crear contacto: ${e.toString()}');
+    }
+  }
+
+  // Obtener contactos por empresa
+  Future<List<Map<String, dynamic>>> getContactosByEmpresa(int idEmpresa) async {
+    try {
+      return await _supabase
+          .from('contactoEmpresa')
+          .select()
+          .eq('idEmpresa', idEmpresa)
+          .order('nombre', ascending: true);
+    } catch (e) {
+      throw Exception('Error al obtener contactos: ${e.toString()}');
+    }
+  }
+
+  // Obtener contacto por ID
+  Future<Map<String, dynamic>> getContactoById(int idContacto) async {
+    try {
+      return await _supabase
+          .from('contactoEmpresa')
+          .select('*, empresa:empresas(nombre, descripcion)')
+          .eq('idContacto', idContacto)
+          .single();
+    } catch (e) {
+      throw Exception('Error al obtener contacto: ${e.toString()}');
+    }
+  }
+}
