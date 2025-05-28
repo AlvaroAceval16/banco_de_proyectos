@@ -1,182 +1,280 @@
+// info_empresa.dart
 import 'package:flutter/material.dart';
+import 'package:banco_de_proyectos/back/logica_info_empresa.dart'; // Import the new logic class
 
-class InfoEmpresa extends StatelessWidget {
+class InfoEmpresa extends StatefulWidget {
+  final int idEmpresa; // Add a constructor to receive the company ID
+
+  const InfoEmpresa({super.key, required this.idEmpresa});
+
+  @override
+  State<InfoEmpresa> createState() => _InfoEmpresaState();
+}
+
+class _InfoEmpresaState extends State<InfoEmpresa> {
+  final LogicaInfoEmpresa _logicaInfoEmpresa = LogicaInfoEmpresa();
+  Map<String, dynamic>? _empresaData;
+  List<Map<String, dynamic>> _proyectos = [];
+  bool _isLoading = true;
+  String _errorMessage = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchEmpresaDetails();
+  }
+
+  Future<void> _fetchEmpresaDetails() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+    try {
+      final empresa = await _logicaInfoEmpresa.obtenerDetallesEmpresa(
+        widget.idEmpresa,
+      );
+      if (empresa != null) {
+        final proyectos = await _logicaInfoEmpresa.obtenerProyectosEmpresa(
+          widget.idEmpresa,
+        );
+        setState(() {
+          _empresaData = empresa;
+          _proyectos = proyectos;
+        });
+      } else {
+        setState(() {
+          _errorMessage = 'No se encontraron detalles para esta empresa.';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Error al cargar los datos: $e';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF002A5C),
+      backgroundColor: const Color(0xFF002A5C),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Acción para editar
+          // Acción para editar - You might want to pass _empresaData for editing
+          print('Edit company: ${_empresaData?['nombre']}');
         },
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        child: Icon(Icons.edit, color: Colors.white),
+        child: const Icon(Icons.edit, color: Colors.white),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView(
-              children: [
-                // Parte azul superior
-                Container(
-                  decoration: BoxDecoration(
-                    color: Color(0xFF002A5C),
-                    borderRadius: BorderRadius.vertical(
-                      bottom: Radius.circular(20),
+      body:
+          _isLoading
+              ? const Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              )
+              : _errorMessage.isNotEmpty
+              ? Center(
+                child: Text(
+                  _errorMessage,
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                ),
+              )
+              : Column(
+                children: [
+                  Expanded(
+                    child: ListView(
+                      children: [
+                        // Parte azul superior
+                        Container(
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF002A5C),
+                            borderRadius: BorderRadius.vertical(
+                              bottom: Radius.circular(20),
+                            ),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 30,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Back button
+                              GestureDetector(
+                                onTap: () => Navigator.pop(context),
+                                child: const Icon(
+                                  Icons.arrow_back,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              Text(
+                                _empresaData?['nombre'] ??
+                                    "Nombre de la empresa",
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Poppins',
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                _empresaData?['descripcion'] ??
+                                    "Descripción de la empresa no disponible.",
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.white70,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+
+                              const SizedBox(height: 20),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _infoItem(
+                                    "Sector o industria",
+                                    _empresaData?['sector'] ?? 'N/A',
+                                  ),
+                                  _infoItem(
+                                    "Giro de la empresa",
+                                    _empresaData?['giro'] ?? 'N/A',
+                                  ),
+                                  _infoItem(
+                                    "Tamaño de la empresa",
+                                    _empresaData?['tamano'] ?? 'N/A',
+                                  ),
+                                  _infoItem(
+                                    "RFC",
+                                    _empresaData?['rfc'] ?? 'N/A',
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Parte blanca inferior
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 25,
+                          ),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(25),
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Center(
+                                child: Container(
+                                  width: 40,
+                                  height: 4,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black26,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              const Text(
+                                "Proyectos",
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              // Sección Proyectos
+                              SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Row(
+                                  spacing:
+                                      10, // Assuming spacing is a property of Row or similar. If not, add SizedBox between children.
+                                  children:
+                                      _proyectos.isEmpty
+                                          ? [
+                                            const Text(
+                                              'No hay proyectos registrados.',
+                                              style: TextStyle(
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                          ]
+                                          : _proyectos.map((proyecto) {
+                                            return _projectBox(
+                                              proyecto['nombreProyecto'] ??
+                                                  'Sin Nombre',
+                                              proyecto['descripcion'] ??
+                                                  'Sin Descripción',
+                                            );
+                                          }).toList(),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              // Sección Ubicación
+                              const Text(
+                                "Ubicacion",
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              InfoCard(
+                                label: "Código postal",
+                                title:
+                                    "Código postal", // Redundant if subtitle is the value
+                                subtitle: _empresaData?['cp'] ?? 'N/A',
+                                icon: Icons.location_on_outlined,
+                              ),
+                              const SizedBox(height: 10),
+                              InfoCard(
+                                label: "Estado",
+                                title:
+                                    "Estado donde se encuentra la empresa", // Redundant if subtitle is the value
+                                subtitle: _empresaData?['estado'] ?? 'N/A',
+                                icon: Icons.location_on_outlined,
+                              ),
+                              const SizedBox(height: 10),
+                              InfoCard(
+                                label: "Ciudad",
+                                title:
+                                    "Ciudad donde se encuentra la empresa", // Redundant if subtitle is the value
+                                subtitle: _empresaData?['ciudad'] ?? 'N/A',
+                                icon: Icons.location_on_outlined,
+                              ),
+                              const SizedBox(height: 10),
+                              InfoCard(
+                                label: "Dirección",
+                                title:
+                                    "Direccion", // Redundant if subtitle is the value
+                                subtitle: _empresaData?['direccion'] ?? 'N/A',
+                                icon: Icons.location_on_outlined,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(Icons.arrow_back, color: Colors.white),
-                      SizedBox(height: 20),
-                      Text(
-                        "Nombre de la empresa",
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Poppins',
-                          color: Colors.white,
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        "Descripción de la empresa, aquí va toda la descripción de la empresa.",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.white70,
-                          fontFamily: 'Poppins',
-                        ),
-                      ),
-                      SizedBox(height: 4),
-
-                      SizedBox(height: 20),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _infoItem("Sector o industria", "Tecnología"),
-                          _infoItem(
-                            "Giro de la empresa",
-                            "Comercialización de software",
-                          ),
-                          _infoItem("Tamaño de la empresa", "Mediana"),
-                          _infoItem("RFC", "ABC123456789"),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Parte blanca inferior
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 25),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(25),
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                        child: Container(
-                          width: 40,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: Colors.black26,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 20),
-                      Text(
-                        "Proyectos",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Poppins',
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      // Sección Proyectos
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          spacing: 10,
-                          children: [
-                            _projectBox(
-                              "Proyecto 1",
-                              "Descripción del proyecto 1",
-                            ),
-                            _projectBox(
-                              "Proyecto 2",
-                              "Descripción del proyecto 2",
-                            ),
-                            _projectBox(
-                              "Proyecto 3",
-                              "Descripción del proyecto 3",
-                            ),
-                            _projectBox(
-                              "Proyecto 4",
-                              "Descripción del proyecto 4",
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 20),
-                      // Sección Empresa
-                      Text(
-                        "Ubicacion",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Poppins',
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      InfoCard(
-                        label: "Código postal",
-                        title: "Código postal",
-                        subtitle: "12345",
-                        icon: Icons.location_on_outlined,
-                      ),
-                      SizedBox(height: 10),
-                      // Sección Tecnologías
-                      InfoCard(
-                        label: "Estado",
-                        title: "Estado donde se encuentra la empresa",
-                        subtitle: "Durango",
-                        icon: Icons.location_on_outlined,
-                      ),
-                      SizedBox(height: 10),
-                      InfoCard(
-                        label: "Ciudad",
-                        title: "Ciudad donde se encuentra la empresa",
-                        subtitle: "Durango",
-                        icon: Icons.location_on_outlined,
-                      ),
-                      SizedBox(height: 10),
-                      InfoCard(
-                        label: "Dirección",
-                        title: "Direccion",
-                        subtitle: "Dirección de la emopresa",
-                        icon: Icons.location_on_outlined,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+                ],
+              ),
     );
   }
 
+  // Helper method for consistent label style
   TextStyle _labelStyle() {
-    return TextStyle(
+    return const TextStyle(
       fontSize: 14,
       fontFamily: 'Poppins',
       fontWeight: FontWeight.w500,
@@ -189,11 +287,11 @@ class InfoEmpresa extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Container(
+          SizedBox(
             width: 150, // Asegura que las etiquetas tengan un ancho constante
             child: Text(
               label,
-              style: TextStyle(
+              style: const TextStyle(
                 color: Color.fromARGB(255, 246, 247, 248),
                 fontFamily: 'Poppins',
                 fontWeight: FontWeight.w500,
@@ -203,7 +301,7 @@ class InfoEmpresa extends StatelessWidget {
           Expanded(
             child: Text(
               value,
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
@@ -217,42 +315,13 @@ class InfoEmpresa extends StatelessWidget {
     );
   }
 
-  Widget _infoBox(String title, [String? subtitle]) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 246, 247, 248),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          if (subtitle != null)
-            Text(
-              subtitle,
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 12,
-                color: Colors.black54,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
   Widget _projectBox(String title, String description) {
     return Container(
       width: 200, // Ancho de cada caja
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(
+        right: 10,
+      ), // Add margin for spacing between project boxes
       decoration: BoxDecoration(
         color: const Color.fromARGB(
           255,
@@ -267,18 +336,18 @@ class InfoEmpresa extends StatelessWidget {
         children: [
           Text(
             title,
-            style: TextStyle(
-              color: const Color.fromARGB(255, 0, 0, 0),
+            style: const TextStyle(
+              color: Color.fromARGB(255, 0, 0, 0),
               fontSize: 16,
               fontWeight: FontWeight.bold,
               fontFamily: 'Poppins',
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
             description,
-            style: TextStyle(
-              color: const Color.fromARGB(179, 1, 1, 1),
+            style: const TextStyle(
+              color: Color.fromARGB(179, 1, 1, 1),
               fontSize: 12,
               fontFamily: 'Poppins',
             ),
@@ -308,23 +377,23 @@ class InfoCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: _labelStyle()),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         Card(
           elevation: 0,
           color: Theme.of(context).cardColor,
           child: ListTile(
             title: Text(
               title,
-              style: TextStyle(
+              style: const TextStyle(
                 fontFamily: 'Poppins',
                 fontWeight: FontWeight.w500,
               ),
             ),
             subtitle: Text(
               subtitle,
-              style: TextStyle(
+              style: const TextStyle(
                 fontFamily: 'Poppins',
-                color: const Color.fromARGB(255, 0, 0, 0),
+                color: Color.fromARGB(255, 0, 0, 0),
               ),
             ),
             leading: Icon(icon),
@@ -335,7 +404,7 @@ class InfoCard extends StatelessWidget {
   }
 
   TextStyle _labelStyle() {
-    return TextStyle(
+    return const TextStyle(
       fontSize: 14,
       fontFamily: 'Poppins',
       fontWeight: FontWeight.w500,

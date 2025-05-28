@@ -10,7 +10,7 @@ class LogicaInfoEmpresa {
           await _supabase
               .from('empresas')
               .select('*')
-              .eq('idEmpresa', idEmpresa)
+              .eq('idempresa', idEmpresa)
               .single(); // Use .single() to get a single row or throw an error if not found
 
       return response;
@@ -28,7 +28,7 @@ class LogicaInfoEmpresa {
           .from('proyectos') // Assuming you have a 'proyectos' table
           .select('*')
           .eq(
-            'idEmpresa',
+            'idempresa',
             idEmpresa,
           ) // Assuming 'empresa_id' links projects to companies
           .order('nombreProyecto', ascending: true); // Order by project name
