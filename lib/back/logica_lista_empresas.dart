@@ -9,6 +9,7 @@ class LogicaListaEmpresas {
       final response = await _supabase
           .from('empresas')
           .select('*')
+          .eq('activo', true) // Solo empresas activas
           .order('nombre', ascending: true);
 
       return List<Map<String, dynamic>>.from(response);

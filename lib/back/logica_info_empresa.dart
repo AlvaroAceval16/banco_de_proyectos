@@ -11,7 +11,7 @@ class LogicaInfoEmpresa {
               .from('empresas')
               .select('*')
               .eq('idempresa', idEmpresa)
-              .single(); // Use .single() to get a single row or throw an error if not found
+              .single();
 
       return response;
     } catch (e) {
@@ -25,18 +25,49 @@ class LogicaInfoEmpresa {
   ) async {
     try {
       final response = await _supabase
-          .from('proyectos') // Assuming you have a 'proyectos' table
+          .from('proyectos')
           .select('*')
-          .eq(
-            'idempresa',
-            idEmpresa,
-          ) // Assuming 'empresa_id' links projects to companies
-          .order('nombreProyecto', ascending: true); // Order by project name
+          .eq('idempresa', idEmpresa)
+          .order('nombreproyecto', ascending: true);
 
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
       print('Error al cargar proyectos de la empresa: $e');
-      return []; // Return an empty list on error
+      return [];
+    }
+  }
+
+  Future<void> actualizarEmpresa(
+    int idEmpresa,
+    Map<String, dynamic> newData,
+  ) async {
+    try {
+      await _supabase
+          .from('empresas')
+          .update(newData)
+          .eq('idempresa', idEmpresa);
+      print('Empresa actualizada exitosamente!');
+    } catch (e) {
+      print('Error al actualizar empresa: $e');
+      throw Exception('Error al actualizar empresa: $e');
+    }
+  }
+
+  // New: Method for logical deletion
+  Future<void> eliminarEmpresaLogic(int idEmpresa) async {
+    try {
+      await _supabase
+          .from('empresas')
+          .update({
+            'activo': false, // Set 'activo' to false for logical deletion
+            'fechaeliminacion':
+                DateTime.now().toIso8601String(), // Record deletion date
+          })
+          .eq('idempresa', idEmpresa);
+      print('Empresa eliminada lógicamente exitosamente!');
+    } catch (e) {
+      print('Error al eliminar lógicamente la empresa: $e');
+      throw Exception('Error al eliminar la empresa: $e');
     }
   }
 }
