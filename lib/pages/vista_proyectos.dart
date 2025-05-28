@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'info_proyecto.dart';
+import 'package:banco_de_proyectos/back/logica_proyectos.dart';
 
 class ResumenProyectosPage extends StatefulWidget {
   const ResumenProyectosPage({super.key});
@@ -9,15 +10,8 @@ class ResumenProyectosPage extends StatefulWidget {
 }
 
 class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
-  final List<Map<String, String>> proyectos = List.generate(
-    8,
-    (index) => {
-      'empresa': 'Proyecto ${String.fromCharCode(65 + index)}',
-      'descripcion': 'Descripción pequeña',
-    },
-  );
+  late Future<List<Map<String, dynamic>>> _obtenerProyectosFuture;
 
-  // Filtros de búsqueda
   final Map<String, bool> filtros = {
     'Activo': true,
     'En Proceso': true,
@@ -29,11 +23,10 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
     'Ago-Dic': true,
   };
 
-  List<Map<String, String>> get proyectosFiltrados {
-    return proyectos.where((proyecto) {
-      // Aquí se puede aplicar lógica de filtrado real si se tuviera más información
-      return true;
-    }).toList();
+  @override
+  void initState() {
+    super.initState();
+    _obtenerProyectosFuture = ProyectoService.obtenerProyectos();
   }
 
   @override
@@ -56,22 +49,7 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Filtros',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ],
-                  ),
+                  _buildDrawerHeader(),
                   const SizedBox(height: 16),
                   _buildSectionTitle('Estado'),
                   _buildSwitchTile('Activo'),
@@ -88,29 +66,7 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
                   _buildSwitchTile('Ene-Jun'),
                   _buildSwitchTile('Ago-Dic'),
                   const Spacer(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () => setState(() {}),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                        ),
-                        child: const Text('Aplicar'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            filtros.updateAll((key, value) => true);
-                          });
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey.shade400,
-                        ),
-                        child: const Text('Cancelar'),
-                      ),
-                    ],
-                  ),
+                  _buildDrawerButtons(),
                 ],
               ),
             ),
@@ -125,11 +81,10 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
           ),
           actions: [
             Builder(
-              builder:
-                  (context) => IconButton(
-                    icon: const Icon(Icons.tune),
-                    onPressed: () => Scaffold.of(context).openDrawer(),
-                  ),
+              builder: (context) => IconButton(
+                icon: const Icon(Icons.tune),
+                onPressed: () => Scaffold.of(context).openDrawer(),
+              ),
             ),
           ],
         ),
@@ -137,49 +92,56 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Busca tus proyectos...',
-                  prefixIcon: const Icon(Icons.search),
-                  filled: true,
-                  fillColor: Theme.of(context).cardColor,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
+              _buildSearchField(),
               const SizedBox(height: 16),
               Expanded(
-                child: ListView.builder(
-                  itemCount: proyectosFiltrados.length,
-                  itemBuilder: (context, index) {
-                    final proyecto = proyectosFiltrados[index];
-                    return Card(
-                      color: Theme.of(context).cardColor,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      margin: const EdgeInsets.only(bottom: 12),
-                      child: ListTile(
-                        title: Text(proyecto['empresa']!,
-                        style: const TextStyle(
-                          fontFamily: 'Poppins',
-                          fontWeight: FontWeight.w500, // Semibold
-                          fontSize: 16,
-                        ),),
-                        subtitle: Text(proyecto['descripcion']!),
-                        trailing: const Icon(Icons.arrow_forward, size: 20,),
-                        onTap:
-                            () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                //Cambiar esto para que me lleve a la info de proyectos
-                                builder: (context) => InfoProyecto(),
+                child: FutureBuilder<List<Map<String, dynamic>>>(
+                  future: _obtenerProyectosFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const Center(child: Text('No hay proyectos disponibles.'));
+                    }
+
+                    final proyectos = snapshot.data!;
+                    return ListView.builder(
+                      itemCount: proyectos.length,
+                      itemBuilder: (context, index) {
+                        final proyecto = proyectos[index];
+                        return Card(
+                          color: Theme.of(context).cardColor,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          margin: const EdgeInsets.only(bottom: 12),
+                          child: ListTile(
+                            title: Text(
+                              proyecto['nombreproyecto'] ?? 'Proyecto sin nombre',
+                              style: const TextStyle(
+                                fontFamily: 'Poppins',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 16,
                               ),
                             ),
-                      ),
+                            subtitle: Text(
+                              proyecto['descripcion'] ?? 'Sin descripción',
+                            ),
+                            trailing: const Icon(Icons.arrow_forward, size: 20),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => InfoProyecto(),
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
                     );
                   },
                 ),
@@ -195,6 +157,25 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
           child: const Icon(Icons.add),
         ),
       ),
+    );
+  }
+
+  Widget _buildDrawerHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        const Text(
+          'Filtros',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ],
     );
   }
 
@@ -218,6 +199,47 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
         });
       },
       activeColor: Colors.green,
+    );
+  }
+
+  Widget _buildDrawerButtons() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        ElevatedButton(
+          onPressed: () => setState(() {}),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+          ),
+          child: const Text('Aplicar'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            setState(() {
+              filtros.updateAll((key, value) => true);
+            });
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.grey.shade400,
+          ),
+          child: const Text('Cancelar'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSearchField() {
+    return TextField(
+      decoration: InputDecoration(
+        hintText: 'Busca tus proyectos...',
+        prefixIcon: const Icon(Icons.search),
+        filled: true,
+        fillColor: Theme.of(context).cardColor,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide.none,
+        ),
+      ),
     );
   }
 }
