@@ -254,7 +254,11 @@ class _ResumenEmpresasPageState extends State<ResumenEmpresasPage> {
                                   () => Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => InfoEmpresa(),
+                                      builder:
+                                          (context) => InfoEmpresa(
+                                            idEmpresa:
+                                                empresa['idempresa'] ?? 1,
+                                          ),
                                     ),
                                   ),
                             ),
