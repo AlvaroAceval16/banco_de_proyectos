@@ -61,8 +61,23 @@ void cargarDatosProyecto() async {
 */
 */
 
+
 class ProyectoService {
-  final _supabase = Supabase.instance.client;
+  static final _supabase = Supabase.instance.client;
+
+    //Obtener proyectos para vista
+  static Future<List<Map<String, dynamic>>> obtenerProyectos() async {
+    try {
+      final response = await _supabase
+          .from('proyectos')
+          .select('*')
+          .order('nombreproyecto', ascending: true);
+
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      throw Exception('Error al cargar proyectos: $e');
+    }
+  }
 
   Future<Map<String, dynamic>> guardarProyecto({
   required String nombre,
@@ -248,4 +263,7 @@ class ProyectoService {
       throw Exception('Error al cambiar estado del proyecto');
     }
   }
+  
+
+
 }
