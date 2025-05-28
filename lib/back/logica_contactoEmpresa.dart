@@ -65,7 +65,7 @@ class ContactoService {
   }) async {
     try {
       await _supabase.from('contactoEmpresa').insert({
-        'idEmpresa': idEmpresa,
+        'idEmpresa': idEmpresa ?? 1,
         'nombre': nombre,
         'apellidoPaterno': apellidoPaterno,
         'apellidoMaterno': apellidoMaterno,
@@ -81,7 +81,9 @@ class ContactoService {
   }
 
   // Obtener contactos por empresa
-  Future<List<Map<String, dynamic>>> getContactosByEmpresa(int idEmpresa) async {
+  Future<List<Map<String, dynamic>>> getContactosByEmpresa(
+    int idEmpresa,
+  ) async {
     try {
       return await _supabase
           .from('contactoEmpresa')
