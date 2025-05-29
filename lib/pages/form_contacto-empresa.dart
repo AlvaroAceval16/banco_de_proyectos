@@ -140,7 +140,10 @@ class _FormularioContactoEmpresaState extends State<FormularioContactoEmpresa> {
         elevation: 0,
         title: Row(
           children: [
-            Icon(Icons.menu, color: Colors.black),
+            IconButton(
+              icon: Icon(Icons.arrow_back, color: Colors.black),
+              onPressed: () => Navigator.pop(context),
+            ),
             SizedBox(width: 10),
             Text(
               "Contacto Empresarial",
