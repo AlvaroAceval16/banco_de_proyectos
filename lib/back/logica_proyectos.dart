@@ -61,7 +61,6 @@ void cargarDatosProyecto() async {
 */
 */
 
-
 class ProyectoService {
   static final _supabase = Supabase.instance.client;
 
@@ -79,59 +78,70 @@ class ProyectoService {
     }
   }
 
-  static Future<List<Map<String, dynamic>>> obtenerProyectosOrdenadosPorFecha() async {
-  try {
-    final response = await _supabase
-        .from('proyectos')
-        .select('*')
-        .order('fechasolicitud', ascending: false); 
-    return List<Map<String, dynamic>>.from(response);
-  } catch (e) {
-    throw Exception('Error al cargar proyectos: $e');
+  static Future<List<Map<String, dynamic>>>
+  obtenerProyectosOrdenadosPorFecha() async {
+    try {
+      final response = await _supabase
+          .from('proyectos')
+          .select('*')
+          .order('fechasolicitud', ascending: false);
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      throw Exception('Error al cargar proyectos: $e');
+    }
   }
-}
 
   Future<Map<String, dynamic>> guardarProyecto({
-  required String nombre,
-  required String descripcion,
-  required String? modalidad,
-  required String? carrera,
-  required String? periodo,
-  required String fechasolicitud,
-  required String apoyoeconomico,
-  required String? plazosentrega,
-  required String tecnologias,
-  int? idempresa,
-  int numeroestudiantes = 1,
-  String estado = 'Abierto',
-}) async {
-  try {
-    if (modalidad == null || carrera == null || periodo == null || plazosentrega == null) {
-      throw Exception('Todos los campos select deben tener un valor seleccionado');
+    required String nombre,
+    required String descripcion,
+    required String? modalidad,
+    required String? carrera,
+    required String? periodo,
+    required String fechasolicitud,
+    required String apoyoeconomico,
+    required String? plazosentrega,
+    required String tecnologias,
+    int? idempresa,
+    int numeroestudiantes = 1,
+    String estado = 'Abierto',
+  }) async {
+    try {
+      if (modalidad == null ||
+          carrera == null ||
+          periodo == null ||
+          plazosentrega == null) {
+        throw Exception(
+          'Todos los campos select deben tener un valor seleccionado',
+        );
+      }
+
+      final response =
+          await _supabase
+              .from('proyectos')
+              .insert({
+                'nombreproyecto': nombre,
+                'descripcion': descripcion,
+                'modalidad': modalidad,
+                'carreras': carrera,
+                'periodo': periodo,
+                'fechasolicitud': fechasolicitud,
+                'apoyoeconomico': apoyoeconomico,
+                'plazosentrega': plazosentrega,
+                'tecnologias': tecnologias,
+                'idempresa': idempresa ?? 1,
+                'numeroestudiantes': numeroestudiantes,
+                'estado': estado,
+                'tipoproyecto': 'Desarrollo',
+              })
+              .select()
+              .single();
+
+      return response;
+    } catch (e) {
+      print('❌ Error al guardar proyecto: $e');
+      throw Exception('Error al guardar proyecto: ${e.toString()}');
     }
-
-    final response = await _supabase.from('proyectos').insert({
-      'nombreproyecto': nombre,
-      'descripcion': descripcion,
-      'modalidad': modalidad,
-      'carreras': carrera,
-      'periodo': periodo,
-      'fechasolicitud': fechasolicitud,
-      'apoyoeconomico': apoyoeconomico,
-      'plazosentrega': plazosentrega,
-      'tecnologias': tecnologias,
-      'idempresa': idempresa ?? 1,
-      'numeroestudiantes': numeroestudiantes,
-      'estado': estado,
-      'tipoproyecto': 'Desarrollo',
-    }).select().single();
-
-    return response;
-  } catch (e) {
-    print('❌ Error al guardar proyecto: $e');
-    throw Exception('Error al guardar proyecto: ${e.toString()}');
   }
-}
 
   // CREATE - Insertar nuevo proyecto
   Future<Map<String, dynamic>> crearProyecto({
@@ -148,25 +158,28 @@ class ProyectoService {
     int? numeroestudiantes, // Opcional si no está en el formulario
   }) async {
     try {
-      final response = await _supabase
-          .from('proyectos')
-          .insert({
-            'nombreproyecto': nombre,
-            'descripcion': descripcion,
-            'carreras': carrera,
-            'periodo': periodo,
-            'tipoproyecto': tipoproyecto,
-            'apoyoeconomico': apoyoeconomico,
-            'plazosentrega': plazosentrega,
-            'tecnologias': tecnologias,
-            'modalidad': modalidad,
-            'fechasolicitud': DateTime.now().toIso8601String(),
-            'estado': 'Abierto', // Estado por defecto
-            'idempresa': idempresa ?? 1, // Valor por defecto si no se proporciona
-            'numeroestudiantes': numeroestudiantes ?? 1, // Valor por defecto
-          })
-          .select()
-          .single();
+      final response =
+          await _supabase
+              .from('proyectos')
+              .insert({
+                'nombreproyecto': nombre,
+                'descripcion': descripcion,
+                'carreras': carrera,
+                'periodo': periodo,
+                'tipoproyecto': tipoproyecto,
+                'apoyoeconomico': apoyoeconomico,
+                'plazosentrega': plazosentrega,
+                'tecnologias': tecnologias,
+                'modalidad': modalidad,
+                'fechasolicitud': DateTime.now().toIso8601String(),
+                'estado': 'Abierto', // Estado por defecto
+                'idempresa':
+                    idempresa ?? 1, // Valor por defecto si no se proporciona
+                'numeroestudiantes':
+                    numeroestudiantes ?? 1, // Valor por defecto
+              })
+              .select()
+              .single();
 
       return response;
     } catch (e) {
@@ -178,14 +191,15 @@ class ProyectoService {
   // READ - Obtener proyecto por ID
   Future<Map<String, dynamic>?> obtenerProyecto(int idproyecto) async {
     try {
-      final response = await _supabase
-          .from('proyectos')
-          .select('''
+      final response =
+          await _supabase
+              .from('proyectos')
+              .select('''
             *,
             empresa:empresas(nombre, descripcion)
           ''')
-          .eq('idproyecto', idproyecto)
-          .single();
+              .eq('idproyecto', idproyecto)
+              .single();
 
       return response;
     } catch (e) {
@@ -253,10 +267,7 @@ class ProyectoService {
   // DELETE - Eliminar proyecto
   Future<void> eliminarProyecto(int idproyecto) async {
     try {
-      await _supabase
-          .from('proyectos')
-          .delete()
-          .eq('idproyecto', idproyecto);
+      await _supabase.from('proyectos').delete().eq('idproyecto', idproyecto);
     } catch (e) {
       print('❌ Error al eliminar proyecto: $e');
       throw Exception('Error al eliminar proyecto');
@@ -275,7 +286,21 @@ class ProyectoService {
       throw Exception('Error al cambiar estado del proyecto');
     }
   }
-  
 
-
+  Future<void> eliminarProyectoLogic(int idProyecto) async {
+    try {
+      await _supabase
+          .from('proyectos')
+          .update({
+            'activo': false, // Set 'activo' to false for logical deletion
+            'fechaeliminacion':
+                DateTime.now().toIso8601String(), // Record deletion date
+          })
+          .eq('idproyecto', idProyecto);
+      print('Empresa eliminada lógicamente exitosamente!');
+    } catch (e) {
+      print('Error al eliminar lógicamente la empresa: $e');
+      throw Exception('Error al eliminar la empresa: $e');
+    }
+  }
 }
