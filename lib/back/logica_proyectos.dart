@@ -310,54 +310,53 @@ class ProyectoService {
   }
 
   static Future<List<Proyecto>> obtenerProyectosConFiltros({
-    List<String>? filtrosEstado,
-    List<String>? filtrosModalidad,
-    List<String>? filtrosPeriodo,
-    String? searchTerm,
-    String orderByColumn = 'fechasolicitud', // Por defecto
-    bool ascending = false, // Por defecto
-  }) async {
-    try {
-      // Inicia la consulta
-      var query = _supabase.from('proyectos').select('*');
+  List<String>? filtrosEstado,
+  List<String>? filtrosModalidad,
+  List<String>? filtrosPeriodo,
+  String? searchTerm,
+  String orderByColumn = 'fechasolicitud',
+  bool ascending = false,
+}) async {
+  try {
+    var query = _supabase.from('proyectos').select('*');
+    query = query.eq('activo', true);
 
-      // Aplica el filtro 'activo = true' por defecto
-      query = query.eq('activo', true);
-
-      // Aplicar filtros de estado
-      if (filtrosEstado != null && filtrosEstado.isNotEmpty) {
-        query = query.filter('estado', 'in', '(${filtrosEstado.map((e) => "'$e'").join(',')})');
-      }
-
-      // Aplicar filtros de modalidad
-      if (filtrosModalidad != null && filtrosModalidad.isNotEmpty) {
-        query = query.filter('modalidad', 'in', '(${filtrosModalidad.map((e) => "'$e'").join(',')})');
-      }
-
-      // Aplicar filtros de periodo
-      if (filtrosPeriodo != null && filtrosPeriodo.isNotEmpty) {
-        query = query.filter('periodo', 'in', '(${filtrosPeriodo.map((e) => "'$e'").join(',')})');
-      }
-
-      // Aplicar término de búsqueda
-      if (searchTerm != null && searchTerm.isNotEmpty) {
-        // Encadena la condición .or() directamente al query
-        query = query.or('nombreproyecto.ilike.%$searchTerm%,descripcion.ilike.%$searchTerm%');
-      }
-
-      // Aplicar ordenamiento. El método .order() devuelve un PostgrestTransformBuilder,
-      // por eso el encadenamiento directo es crucial para evitar el error de asignación.
-      final List<Map<String, dynamic>> response = await query.order(orderByColumn, ascending: ascending);
-
-      if (response.isEmpty) {
-        return [];
-      }
-
-      // Mapea los resultados a objetos Proyecto
-      return response.map((json) => Proyecto.fromMap(json)).toList();
-    } catch (e) {
-      print('Error al obtener proyectos con filtros: $e');
-      throw Exception('Error al cargar proyectos con filtros: $e');
+    // Aplicar filtros de estado
+    if (filtrosEstado != null && filtrosEstado.isNotEmpty) {
+      query = query.filter('estado', 'in', '(${filtrosEstado.map((e) => "'$e'").join(',')})');
     }
+
+    // Aplicar filtros de modalidad
+    if (filtrosModalidad != null && filtrosModalidad.isNotEmpty) {
+      query = query.filter('modalidad', 'in', '(${filtrosModalidad.map((e) => "'$e'").join(',')})');
+    }
+
+    // Aplicar filtros de periodo
+    if (filtrosPeriodo != null && filtrosPeriodo.isNotEmpty) {
+      query = query.filter('periodo', 'in', '(${filtrosPeriodo.map((e) => "'$e'").join(',')})');
+    }
+
+    // Aplicar término de búsqueda
+    if (searchTerm != null && searchTerm.isNotEmpty) {
+      query = query.or('nombreproyecto.ilike.%$searchTerm%,descripcion.ilike.%$searchTerm%');
+    }
+
+    final List<Map<String, dynamic>> response = await query.order(orderByColumn, ascending: ascending);
+
+    if (response.isEmpty) {
+      return [];
+    }
+
+    return response.map((json) => Proyecto.fromMap(json)).toList();
+  } catch (e) {
+    print('Error al obtener proyectos con filtros: $e');
+    // Simplemente re-lanzamos la excepción o devolvemos una lista vacía para cumplir con el tipo de retorno.
+    // Lanzar la excepción es generalmente mejor para que el UI pueda manejar el error.
+    throw Exception('Error al cargar proyectos con filtros: $e');
+    // O si quieres devolver una lista vacía en caso de error, aunque no lo recomiendo para errores de red/server:
+    // return [];
   }
 }
+}
+
+

@@ -80,10 +80,10 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
       print('-------------------------');
 
       _obtenerProyectosFuture = ProyectoService.obtenerProyectosConFiltros(
+        searchTerm: searchTerm.isNotEmpty ? searchTerm : null,
         filtrosEstado: estadosActivos.isNotEmpty ? estadosActivos : null,
         filtrosModalidad: modalidadesActivas.isNotEmpty ? modalidadesActivas : null,
         filtrosPeriodo: periodosActivos.isNotEmpty ? periodosActivos : null,
-        searchTerm: searchTerm.isNotEmpty ? searchTerm : null,
       );
     });
   }
@@ -304,21 +304,35 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
   }
 
   Widget _buildSearchField() {
-    return TextField(
-      controller: _searchController,
-      decoration: InputDecoration(
-        hintText: 'Busca tus proyectos...',
-        prefixIcon: const Icon(Icons.search),
-        filled: true,
-        fillColor: Theme.of(context).cardColor,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide.none,
-        ),
+  return TextField(
+    controller: _searchController,
+    decoration: InputDecoration(
+      hintText: 'Buscar proyectos...',
+      prefixIcon: const Icon(Icons.search),
+      suffixIcon: _searchController.text.isNotEmpty
+          ? IconButton(
+              icon: const Icon(Icons.clear),
+              onPressed: () {
+                _searchController.clear();
+                _applyFilters();
+              },
+            )
+          : null,
+      filled: true,
+      fillColor: Theme.of(context).cardColor,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(20),
+        borderSide: BorderSide.none,
       ),
-      onSubmitted: (value) {
-        _applyFilters(); // <--- Llama a _applyFilters al presionar Enter en el campo de búsqueda
-      },
-    );
-  }
+      contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+    ),
+    onChanged: (value) {
+      // Opcional: Buscar mientras escribe (con debounce)
+      // _debouncer.run(() => _applyFilters());
+    },
+    onSubmitted: (value) {
+      _applyFilters();
+    },
+  );
+}
 }
