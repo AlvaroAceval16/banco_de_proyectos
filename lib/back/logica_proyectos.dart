@@ -3,7 +3,67 @@ import 'package:banco_de_proyectos/classes/proyecto.dart';
 
 class ProyectoService {
   static final _supabase = Supabase.instance.client;
+  //Dashboard
+  //Concluidos
+   static Future<int> getFinishedProjectsCountBasedOnStatus() async {
+    try {
+      final response = await _supabase
+          .from('proyectos')
+          .select('idproyecto') // Solo necesitamos una columna para el conteo
+          .eq('activo', true) // Aseguramos que solo contamos proyectos activos
+          .eq('estado', 'Concluido'); // Filtramos por el estado "concluido"
+      return response.length;
+    } catch (e) {
+      print('❌ Error al obtener el conteo de proyectos finalizados por estado: $e');
+      return 0; // Devuelve 0 en caso de error
+    }
+  }
+  //En curso
+   static Future<int> getActiveProjectsCountBasedOnStatus() async {
+    try {
+      final response = await _supabase
+          .from('proyectos')
+          .select('idproyecto')
+          .eq('activo', true)
+          .eq('estado', 'Abierto');
 
+      return response.length;
+    } catch (e) {
+      print('❌ Error al obtener el conteo de proyectos activos por estado: $e');
+      return 0;
+    }
+  }
+  //obtener el conteo de proyectos "En capacitacion".
+  static Future<int> getReviewProjectsCountBasedOnStatus() async {
+    try {
+      final response = await _supabase
+          .from('proyectos')
+          .select('idproyecto')
+          .eq('activo', true)
+          .eq('estado', 'En curso');
+
+      return response.length;
+    } catch (e) {
+      print('❌ Error al obtener el conteo de proyectos en revisión por estado: $e');
+      return 0;
+    }
+  }
+  //obtener el conteo total de proyectos (activos).
+  static Future<int> getTotalProjectsCountBasedOnAll() async {
+    try {
+      final response = await _supabase
+          .from('proyectos')
+          .select('idproyecto')
+          .eq('activo', true); // Solo cuenta proyectos activos
+
+      return response.length;
+    } catch (e) {
+      print('❌ Error al obtener el conteo total de proyectos: $e');
+      return 0; // Devuelve 0 en caso de error
+    }
+  }
+
+  
   //Obtener proyectos para vista
   static Future<List<Map<String, dynamic>>> obtenerProyectos() async {
     try {

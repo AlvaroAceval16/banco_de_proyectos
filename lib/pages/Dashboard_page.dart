@@ -15,24 +15,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final ProyectoService _proyectoService = ProyectoService();
   late Future<List<Proyecto>> _recentProjectsFuture;
 
+  // --- NUEVA LÓGICA PARA LOS CONTEOS DE ESTADÍSTICAS ---
+  late Future<List<int>> _statsCountsFuture;
+
   @override
   void initState() {
     super.initState();
     _recentProjectsFuture = _proyectoService.getRecentProjects();
+
+    // Inicializa el Future para los conteos de las estadísticas
+    _statsCountsFuture = Future.wait([
+      ProyectoService.getTotalProjectsCountBasedOnAll(),
+      ProyectoService.getActiveProjectsCountBasedOnStatus(),
+      ProyectoService.getReviewProjectsCountBasedOnStatus(),
+      ProyectoService.getFinishedProjectsCountBasedOnStatus(),
+    ]);
   }
+  // --- FIN NUEVA LÓGICA ---
 
   // Método para construir un elemento de proyecto individual
   Widget _projectItem(Proyecto project, BuildContext context) {
-    // Formatear la fecha para mostrarla de forma amigable
     String formattedDate = _formatDate(project.fechaSolicitud);
 
     return Card(
       color: Theme.of(context).cardColor,
       elevation: 0,
-      margin: const EdgeInsets.only(bottom: 12), // Espacio entre las tarjetas de proyectos
-      child: InkWell( // Hace que la tarjeta sea 'tappeable' y proporciona un efecto visual
+      margin: const EdgeInsets.only(bottom: 12),
+      child: InkWell(
         onTap: () {
-          // Navega a la página de detalles del proyecto, pasando el objeto Proyecto
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -51,7 +61,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      project.nombreProyecto, // Muestra el nombre del proyecto real
+                      project.nombreProyecto,
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Poppins',
@@ -59,7 +69,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      project.descripcion, // Muestra la descripción real del proyecto
+                      project.descripcion,
                       style: TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 12,
@@ -67,7 +77,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         fontWeight: FontWeight.w500,
                       ),
                       overflow: TextOverflow.ellipsis,
-                      maxLines: 2, // Limita la descripción a 2 líneas para que no ocupe demasiado espacio
+                      maxLines: 2,
                     ),
                   ],
                 ),
@@ -75,7 +85,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Expanded(
                 flex: 1,
                 child: Text(
-                  formattedDate, // Muestra la fecha formateada
+                  formattedDate,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontWeight: FontWeight.w500,
@@ -102,7 +112,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         return "${date.day} ${monthNames[date.month - 1]}.";
       }
     } catch (e) {
-      // En caso de error de parseo, se devuelve la cadena original
       print('Error al formatear fecha: $dateString, Error: $e');
       return dateString;
     }
@@ -111,9 +120,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // Método para construir un botón de acción rápida
   Widget _quickAction(String title, String subtitle, VoidCallback? onTap) {
     return Expanded(
-      child: InkWell( // Hace que el área sea 'tappeable' y proporciona un efecto visual
-        onTap: onTap, // Asigna la función de onTap proporcionada
-        borderRadius: BorderRadius.circular(16), // Para que el efecto de tinta respete los bordes
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
         child: Container(
           padding: EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -124,7 +133,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: [
               Icon(Icons.add_circle, color: Colors.blue),
               SizedBox(width: 8),
-              Flexible( // Permite que el texto se ajuste si es largo
+              Flexible(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -176,7 +185,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
       ),
-      drawer: MainDrawer(), // Tu drawer principal
+      drawer: MainDrawer(),
       body: SingleChildScrollView(
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         child: Column(
@@ -210,42 +219,67 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
             SizedBox(height: 10),
+            // --- FutureBuilder para las StatsCards ---
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              child: Row(
-                spacing: 10, // Utiliza el atributo spacing de Row para espaciar los children
-                children: [
-                  StatsCard(
-                    iconColor: const Color(0xFF5285E8),
-                    icon: Icons.folder_outlined,
-                    title: "Proyectos totales",
-                    number: "20",
-                    subtitle: "+2 esta semana",
-                  ),
-                  StatsCard(
-                    iconColor: Colors.red,
-                    icon: Icons.show_chart,
-                    title: "Proyectos activos",
-                    number: "5",
-                    subtitle: "+3 esta semana",
-                  ),
-                  StatsCard(
-                    iconColor: Colors.orange,
-                    icon: Icons.pending_actions,
-                    title: "Proyectos en revisión",
-                    number: "12",
-                    subtitle: "+3 esta semana",
-                  ),
-                  StatsCard(
-                    iconColor: Colors.green,
-                    icon: Icons.task_outlined,
-                    title: "Proyectos finalizados",
-                    number: "3",
-                    subtitle: "+1 esta semana",
-                  ),
-                ],
+              child: FutureBuilder<List<int>>(
+                future: _statsCountsFuture, // Usa el Future que inicializamos en initState
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    // Muestra un cargador mientras se obtienen los datos
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    // Muestra un mensaje de error si algo sale mal
+                    return Center(child: Text('Error al cargar estadísticas: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data == null) {
+                    // Mensaje si no hay datos disponibles
+                    return const Center(child: Text('No hay datos de estadísticas disponibles.'));
+                  } else {
+                    // Cuando los datos están disponibles, construye las StatsCard
+                    final counts = snapshot.data!;
+                    final totalProjects = counts[0];
+                    final activeProjects = counts[1];
+                    final reviewProjects = counts[2];
+                    final finishedProjects = counts[3];
+
+                    return Row(
+                      spacing: 10,
+                      children: [
+                        StatsCard(
+                          iconColor: const Color(0xFF5285E8),
+                          icon: Icons.folder_outlined,
+                          title: "Proyectos totales",
+                          number: totalProjects.toString(),
+                          subtitle: "+2 esta semana", // Puedes hacer este dinámico también
+                        ),
+                        StatsCard(
+                          iconColor: Colors.red,
+                          icon: Icons.show_chart,
+                          title: "Proyectos activos",
+                          number: activeProjects.toString(),
+                          subtitle: "+1 esta semana",
+                        ),
+                        StatsCard(
+                          iconColor: Colors.orange,
+                          icon: Icons.pending_actions,
+                          title: "Proyectos en revisión",
+                          number: reviewProjects.toString(),
+                          subtitle: "+1 esta semana",
+                        ),
+                        StatsCard(
+                          iconColor: Colors.green,
+                          icon: Icons.task_outlined,
+                          title: "Proyectos finalizados",
+                          number: finishedProjects.toString(),
+                          subtitle: "+0 esta semana",
+                        ),
+                      ],
+                    );
+                  }
+                },
               ),
             ),
+            // --- FIN FutureBuilder para las StatsCards ---
             SizedBox(height: 30),
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -261,18 +295,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
             SizedBox(height: 10),
-            // Widget FutureBuilder para mostrar los proyectos cargados asíncronamente
             FutureBuilder<List<Proyecto>>(
               future: _recentProjectsFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator()); // Muestra un indicador de carga
+                  return Center(child: CircularProgressIndicator());
                 } else if (snapshot.hasError) {
-                  return Center(child: Text('Error al cargar proyectos: ${snapshot.error}')); // Muestra un mensaje de error
+                  return Center(child: Text('Error al cargar proyectos: ${snapshot.error}'));
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(child: Text('No hay proyectos recientes para mostrar.')); // Mensaje si no hay datos
+                  return Center(child: Text('No hay proyectos recientes para mostrar.'));
                 } else {
-                  // Si tenemos datos, se mapean a widgets _projectItem y se muestran en una columna
                   return Column(
                     children: snapshot.data!.map((proyecto) {
                       return _projectItem(proyecto, context);
@@ -297,7 +329,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   "Proyectos",
                   "Agregar nuevo proyecto",
                   () {
-                    // Navega a la ruta con nombre '/form_proyecto'
                     Navigator.pushNamed(context, '/form_proyecto');
                   },
                 ),
@@ -306,7 +337,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   "Empresas",
                   "Agregar nueva empresa",
                   () {
-                    // Navega a la ruta con nombre '/form_empresa'
                     Navigator.pushNamed(context, '/form_empresa');
                   },
                 ),
