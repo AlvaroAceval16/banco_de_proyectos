@@ -1,65 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-
-/*final supabase = Supabase.instance.client;
-
-Future<Map<String, dynamic>?> obtenerProyectoPorId(String proyectoId) async {
-  try {
-    final response = await supabase
-        .from('proyectos')
-        .select('''
-          nombre,
-          descripcion,
-          modalidad,
-          carrera,
-          periodo,
-          fecha_solicitud,
-          apoyo_economico,
-          plazos_entrega,
-          tecnologias_utilizadas,
-          empresa (
-            nombre,
-            descripcion
-          ),
-          asesor (
-            nombre
-          ),
-          residente (
-            nombre
-          )
-        ''')
-        .eq('idProyecto', proyectoId)
-        .single();
-
-    return response;
-  } catch (e) {
-    print('❌ Error al obtener proyecto: $e');
-    return null;
-  }
-}
-/*
-void cargarDatosProyecto() async {
-  final data = await obtenerProyectoPorId('id-del-proyecto');
-
-  if (data != null) {
-    setState(() {
-      titulo = data['titulo'];
-      descripcion = data['descripcion'];
-      modalidad = data['modalidad'];
-      carrera = data['carrera'];
-      periodo = data['periodo'];
-      fechaSolicitud = data['fecha_solicitud'];
-      apoyoEconomico = data['apoyo_economico'];
-      plazosEntrega = data['plazos_entrega'];
-      tecnologias = data['tecnologias_utilizadas'];
-      empresaNombre = data['empresa']['nombre'];
-      empresaDescripcion = data['empresa']['descripcion'];
-      asesorNombre = data['asesor']['nombre'];
-      residenteNombre = data['residente']['nombre'];
-    });
-  }
-}
-*/
-*/
+import 'package:banco_de_proyectos/classes/proyecto.dart';
 
 class ProyectoService {
   static final _supabase = Supabase.instance.client;
@@ -70,6 +10,7 @@ class ProyectoService {
       final response = await _supabase
           .from('proyectos')
           .select('*')
+          .eq('activo', true)
           .order('nombreproyecto', ascending: true);
 
       return List<Map<String, dynamic>>.from(response);
@@ -320,24 +261,51 @@ class ProyectoService {
     }
   }
 
-//Eliminacion logica infoproyecto
-Future<void> eliminarProyectoinfoLogic(int idproyecto) async {
+  //Dashboard
+  Future<List<Proyecto>> getRecentProjects({
+    int limit = 3,
+    String orderByColumn =
+        'fechasolicitud', // Asumiendo que esta columna te indica la fecha de creación/actualización
+  }) async {
+    try {
+      final response = await _supabase
+          .from(
+            'proyectos',
+          ) // Reemplaza 'proyectos' con el nombre real de tu tabla en Supabase
+          .select()
+          .order(
+            orderByColumn,
+            ascending: false,
+          ) // Ordena de más reciente a más antiguo
+          .limit(limit);
+
+      if (response.isEmpty) {
+        return [];
+      }
+
+      // Supabase devuelve una lista de mapas. Mapeamos cada mapa a una instancia de Proyecto.
+      return response.map((json) => Proyecto.fromMap(json)).toList();
+    } catch (e) {
+      print('Error al obtener proyectos recientes: $e');
+      return []; // Devuelve una lista vacía en caso de error
+    }
+  }
+
+  //Eliminacion logica infoproyecto
+  Future<void> eliminarProyectoinfoLogic(int idproyecto) async {
     try {
       await _supabase
           .from('proyectos')
           .update({
-            'Abierto': false, // Set 'activo' to false for logical deletion
+            'activo': false, // Set 'activo' to false for logical deletion
             'fechaeliminacion':
                 DateTime.now().toIso8601String(), // Record deletion date
           })
-          .eq('idproyecyo', idproyecto);
+          .eq('idproyecto', idproyecto);
       print('Proyecto eliminado lógicamente exitosamente!');
     } catch (e) {
       print('Error al eliminar lógicamente el proyecto: $e');
       throw Exception('Error al eliminar el proyecto: $e');
     }
   }
-
 }
-
-
