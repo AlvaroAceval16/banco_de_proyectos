@@ -1,8 +1,25 @@
 // lib/back/logica_asignaciones.dart
 import 'package:supabase_flutter/supabase_flutter.dart';
+// lib/back/logica_asignaciones.dart
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:banco_de_proyectos/back/logica_proyectos.dart'; // Asegúrate de importar tu ProyectoService
 
 class AsignacionService {
   final SupabaseClient _supabase = Supabase.instance.client;
+  final ProyectoService _proyectoService = ProyectoService(); // Instancia de ProyectoService
+
+  // Helper para mapear el estado de asignación a estado de proyecto
+  String _mapAsignacionEstadoToProyectoEstado(String asignacionEstado) {
+    switch (asignacionEstado) {
+      case 'En curso':
+        return 'En curso';
+      case 'Finalizado':
+        return 'Concluido';
+      default:
+        // Puedes definir un estado por defecto o lanzar un error si el estado no es válido
+        return 'Abierto'; // Por ejemplo, si no coincide con 'En curso' o 'Finalizado'
+    }
+  }
 
   // CREATE - Crear una nueva asignación
   Future<Map<String, dynamic>> crearAsignacion({
@@ -14,24 +31,32 @@ class AsignacionService {
     required String estado, // 'En curso' o 'Finalizado'
   }) async {
     try {
-      final response =
-          await _supabase
-              .from('asignaciones')
-              .insert({
-                'idproyecto': idProyecto,
-                'idestudiante': idEstudiante,
-                'idtutor': idTutor,
-                // Si fechaAsignacion es null, la DB usará CURRENT_DATE por defecto
-                if (fechaAsignacion != null && fechaAsignacion.isNotEmpty)
-                  'fechaasignacion': fechaAsignacion,
-                if (fechaFinalizacion != null && fechaFinalizacion.isNotEmpty)
-                  'fechafinalizacion': fechaFinalizacion,
-                'estado': estado,
-              })
-              .select()
-              .single(); // Retorna la asignación creada
+      final response = await _supabase
+          .from('asignaciones')
+          .insert({
+            'idproyecto': idProyecto,
+            'idestudiante': idEstudiante,
+            'idtutor': idTutor,
+            if (fechaAsignacion != null && fechaAsignacion.isNotEmpty)
+              'fechaasignacion': fechaAsignacion,
+            if (fechaFinalizacion != null && fechaFinalizacion.isNotEmpty)
+              'fechafinalizacion': fechaFinalizacion,
+            'estado': estado,
+          })
+          .select()
+          .single(); // Retorna la asignación creada
 
       print('Asignación creada exitosamente: $response');
+
+      // --- ACTUALIZAR EL ESTADO DEL PROYECTO ---
+      final newProyectoEstado = _mapAsignacionEstadoToProyectoEstado(estado);
+      await _proyectoService.actualizarEstadoProyecto(
+        idProyecto,
+        newProyectoEstado,
+      );
+      print('Estado del proyecto $idProyecto actualizado a: $newProyectoEstado');
+      // --- FIN ACTUALIZACIÓN ESTADO PROYECTO ---
+
       return response;
     } on PostgrestException catch (e) {
       print('❌ Error de PostgREST al crear asignación: ${e.message}');
@@ -45,15 +70,16 @@ class AsignacionService {
   }
 
   // READ - Obtener una asignación por su ID (para edición)
+  // ... (este método no necesita cambios)
   Future<Map<String, dynamic>?> obtenerAsignacionPorId(int idAsignacion) async {
     try {
       final response =
           await _supabase
               .from('asignaciones')
               .select('''
-        idasignacion, idproyecto, idestudiante, idtutor,
-        fechaasignacion, fechafinalizacion, estado
-      ''')
+          idasignacion, idproyecto, idestudiante, idtutor,
+          fechaasignacion, fechafinalizacion, estado
+        ''')
               .eq('idasignacion', idAsignacion)
               .maybeSingle();
 
@@ -80,6 +106,31 @@ class AsignacionService {
           .update(newData)
           .eq('idasignacion', idAsignacion);
       print('Asignación actualizada exitosamente!');
+
+      // --- ACTUALIZAR EL ESTADO DEL PROYECTO ---
+      // Si el campo 'estado' está en newData, y si el idproyecto está presente,
+      // actualiza el estado del proyecto.
+      if (newData.containsKey('estado')) {
+        // Necesitamos el idProyecto de la asignación.
+        // Primero, obtenemos la asignación si no tenemos el idProyecto en newData.
+        // Esto es crucial para saber qué proyecto actualizar.
+        final asignacionExistente = await obtenerAsignacionPorId(idAsignacion);
+        if (asignacionExistente != null && asignacionExistente.containsKey('idproyecto')) {
+          final int idProyecto = asignacionExistente['idproyecto'];
+          final String newAsignacionEstado = newData['estado'] as String;
+          final newProyectoEstado = _mapAsignacionEstadoToProyectoEstado(newAsignacionEstado);
+
+          await _proyectoService.actualizarEstadoProyecto(
+            idProyecto,
+            newProyectoEstado,
+          );
+          print('Estado del proyecto $idProyecto actualizado a: $newProyectoEstado');
+        } else {
+          print('Advertencia: No se pudo encontrar el idProyecto para la asignación $idAsignacion o el estado no está en newData.');
+        }
+      }
+      // --- FIN ACTUALIZACIÓN ESTADO PROYECTO ---
+
     } on PostgrestException catch (e) {
       print('❌ Error de PostgREST al actualizar asignación: ${e.message}');
       throw Exception(
@@ -91,9 +142,10 @@ class AsignacionService {
     }
   }
 
-  // DELETE - Eliminar una asignación (físicamente de la base de datos)
+
   Future<void> eliminarAsignacion(int idAsignacion) async {
     try {
+
       await _supabase
           .from('asignaciones')
           .delete()
@@ -111,48 +163,31 @@ class AsignacionService {
   }
 
   // --- Métodos para obtener datos para Dropdowns ---
-
-  // Obtener proyectos para el dropdown
-  static Future<List<Map<String, dynamic>>>
-  obtenerProyectosParaDropdown() async {
+  // ... (estos métodos no necesitan cambios)
+  static Future<List<Map<String, dynamic>>> obtenerProyectosParaDropdown() async {
     try {
       final response = await Supabase.instance.client
           .from('proyectos')
-          .select(
-            'idproyecto, nombreproyecto',
-          ) // Asegúrate de que los nombres de las columnas sean correctos
-          .eq('activo', true) // Solo proyectos activos
+          .select('idproyecto, nombreproyecto')
+          .eq('activo', true)
           .order('nombreproyecto', ascending: true);
-
       return List<Map<String, dynamic>>.from(response);
     } on PostgrestException catch (e) {
-      print(
-        '❌ Error de PostgREST al obtener proyectos para dropdown: ${e.message}',
-      );
-      throw Exception(
-        'Error al cargar proyectos para el dropdown: ${e.message}',
-      );
+      print('❌ Error de PostgREST al obtener proyectos para dropdown: ${e.message}');
+      throw Exception('Error al cargar proyectos para el dropdown: ${e.message}');
     } catch (e) {
       print('❌ Error inesperado al obtener proyectos para dropdown: $e');
-      throw Exception(
-        'Error al cargar proyectos para el dropdown: ${e.toString()}',
-      );
+      throw Exception('Error al cargar proyectos para el dropdown: ${e.toString()}');
     }
   }
 
-  // Obtener estudiantes para el dropdown
-  static Future<List<Map<String, dynamic>>>
-  obtenerEstudiantesParaDropdown() async {
+  static Future<List<Map<String, dynamic>>> obtenerEstudiantesParaDropdown() async {
     try {
       final response = await Supabase.instance.client
-          .from('estudiantes') // Nombre de tu tabla de estudiantes
-          .select(
-            'idestudiante, nombre',
-          ) // Asegúrate de los nombres de las columnas
-          .eq('activo', true) // Solo estudiantes activos
+          .from('estudiantes')
+          .select('idestudiante, nombre')
+          .eq('activo', true)
           .order('nombre', ascending: true);
-
-      // Combina nombre y apellido para el display
       return response
           .map(
             (e) => {
@@ -162,32 +197,21 @@ class AsignacionService {
           )
           .toList();
     } on PostgrestException catch (e) {
-      print(
-        '❌ Error de PostgREST al obtener estudiantes para dropdown: ${e.message}',
-      );
-      throw Exception(
-        'Error al cargar estudiantes para el dropdown: ${e.message}',
-      );
+      print('❌ Error de PostgREST al obtener estudiantes para dropdown: ${e.message}');
+      throw Exception('Error al cargar estudiantes para el dropdown: ${e.message}');
     } catch (e) {
       print('❌ Error inesperado al obtener estudiantes para dropdown: $e');
-      throw Exception(
-        'Error al cargar estudiantes para el dropdown: ${e.toString()}',
-      );
+      throw Exception('Error al cargar estudiantes para el dropdown: ${e.toString()}');
     }
   }
 
-  // Obtener tutores para el dropdown
   static Future<List<Map<String, dynamic>>> obtenerTutoresParaDropdown() async {
     try {
       final response = await Supabase.instance.client
-          .from('tutoracademico') // Nombre de tu tabla de tutores
-          .select(
-            'idtutor, nombre, apellidopaterno',
-          ) // Asegúrate de los nombres de las columnas
-          .eq('activo', true) // Solo tutores activos
+          .from('tutoracademico')
+          .select('idtutor, nombre, apellidopaterno')
+          .eq('activo', true)
           .order('apellidopaterno', ascending: true);
-
-      // Combina nombre y apellido para el display
       return response
           .map(
             (e) => {
@@ -197,12 +221,8 @@ class AsignacionService {
           )
           .toList();
     } on PostgrestException catch (e) {
-      print(
-        '❌ Error de PostgREST al obtener tutores para dropdown: ${e.message}',
-      );
-      throw Exception(
-        'Error de base de datos al obtener tutores: ${e.message}',
-      );
+      print('❌ Error de PostgREST al obtener tutores para dropdown: ${e.message}');
+      throw Exception('Error de base de datos al obtener tutores: ${e.message}');
     } catch (e) {
       print('❌ Error inesperado al obtener tutores para dropdown: $e');
       throw Exception('Error al cargar tutores: ${e.toString()}');

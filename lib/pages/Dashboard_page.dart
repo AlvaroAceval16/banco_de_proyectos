@@ -271,7 +271,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           icon: Icons.task_outlined,
                           title: "Proyectos finalizados",
                           number: finishedProjects.toString(),
-                          subtitle: "+0 esta semana",
+                          subtitle: "+1 esta semana",
                         ),
                       ],
                     );

@@ -3,6 +3,27 @@ import 'package:banco_de_proyectos/classes/proyecto.dart';
 
 class ProyectoService {
   static final _supabase = Supabase.instance.client;
+  //Asignaciones
+    /// Actualiza solo el campo 'estado' de un proyecto específico.
+  Future<void> actualizarEstadoProyecto(int idProyecto, String nuevoEstado) async {
+    try {
+      await _supabase
+          .from('proyectos')
+          .update({'estado': nuevoEstado})
+          .eq('idproyecto', idProyecto);
+      print('Estado del proyecto $idProyecto actualizado a "$nuevoEstado".');
+    } on PostgrestException catch (e) {
+      print('❌ Error de PostgREST al actualizar estado del proyecto: ${e.message}');
+      throw Exception(
+        'Error de base de datos al actualizar estado del proyecto: ${e.message}',
+      );
+    } catch (e) {
+      print('❌ Error inesperado al actualizar estado del proyecto: $e');
+      throw Exception('Error al actualizar estado del proyecto: ${e.toString()}');
+    }
+  }
+
+
   //Dashboard
   //Concluidos
    static Future<int> getFinishedProjectsCountBasedOnStatus() async {
