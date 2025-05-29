@@ -1,58 +1,22 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/*final supabase = Supabase.instance.client;
-
-Future<Map<String, dynamic>?> obtenerContactoEmpresaPorId(String contactoId) async {
-  try {
-    final response = await supabase
-        .from('contacto_empresa')//Nombre de la tabla
-        .select(''' //Nombre de los datos 
-          nombre_contacto,
-          comentarios,
-          telefono,
-          correo,
-          vinculo,
-          hora_inicio,
-          hora_fin,
-          empresa (
-            nombre,
-            descripcion
-          )
-        ''')
-        .eq('idContacto', contactoId)//se obtiene el id
-        .single();
-
-    return response;
-  } catch (e) {
-    print('Error al obtener contacto_empresa: $e');
-    return null;
-  }
-}
-/* Metodo para obtener los datos
-void cargarDatosContacto() async {
-  final data = await obtenerContactoEmpresaPorId('id-del-contacto');
-
-  if (data != null) {
-    setState(() {
-      nombre = data['nombre_contacto'];
-      comentarios = data['comentarios'];
-      telefono = data['telefono'];
-      correo = data['correo'];
-      empresaNombre = data['empresa']['nombre'];
-      empresaDescripcion = data['empresa']['descripcion'];
-      vinculo = data['vinculo'];
-      horaInicio = data['hora_inicio'];
-      horaFin = data['hora_fin'];
-    });
-  }
-}
-*/
-*/
 class ContactoService {
   static final _supabase = Supabase.instance.client;
 
-  //Obtener proyectos para vista
-  static Future<List<Map<String, dynamic>>> obtenerContacto() async {
+  static Future<List<Map<String, dynamic>>> getEmpresas() async {
+    try {
+      final response = await _supabase
+          .from('empresas')
+          .select('*')
+          .order('nombre', ascending: true);
+
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      throw Exception('Error al obtener empresas: $e');
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> obtenerContactos() async {
     try {
       final response = await _supabase
           .from('contactoempresa')
@@ -65,60 +29,99 @@ class ContactoService {
     }
   }
 
-  // Crear nuevo contacto
-  Future<void> createContacto({
-    required int idEmpresa,
+  static Future<List<Map<String, dynamic>>> getContactosByEmpresa(int idEmpresa) async {
+    try {
+      final response = await _supabase
+          .from('contactoempresa')
+          .select('*')
+          .eq('idempresa', idEmpresa)
+          .order('nombre', ascending: true);
+
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      throw Exception('Error al obtener contactos por empresa: $e');
+    }
+  }
+
+  static Future<Map<String, dynamic>?> getContactoById(int idContacto) async {
+    try {
+      final response = await _supabase
+          .from('contactoempresa')
+          .select('''
+            idcontacto,
+            nombre,
+            apellidopaterno,
+            apellidomaterno,
+            telefono,
+            correo,
+            puesto,
+            horarioatencion,
+            comentarios,
+            idempresa,
+            empresa (
+              nombre,
+              descripcion
+            )
+          ''')
+          .eq('idcontacto', idContacto)
+          .single();
+
+      return response;
+    } catch (e) {
+      print('Error al obtener contacto por ID: $e');
+      return null;
+    }
+  }
+
+  static Future<void> createContacto({
     required String nombre,
-    required String apellidoPaterno,
-    required String apellidoMaterno,
+    required String apellidopaterno,
+    required String apellidomaterno,
     required String telefono,
     required String correo,
     required String puesto,
-    required String horarioAtencion,
+    required String horaInicio,
+    required String horaFin,
     required String comentarios,
+    required int idempresa,
   }) async {
     try {
+      final String horarioAtencion = '$horaInicio - $horaFin';
+
       await _supabase.from('contactoempresa').insert({
-        'idEmpresa': idEmpresa ?? 1,
         'nombre': nombre,
-        'apellidoPaterno': apellidoPaterno,
-        'apellidoMaterno': apellidoMaterno,
+        'apellidopaterno': apellidopaterno,
+        'apellidomaterno': apellidomaterno,
         'telefono': telefono,
         'correo': correo,
         'puesto': puesto,
-        'horarioAtencion': horarioAtencion,
+        'horarioatencion': horarioAtencion,
         'comentarios': comentarios,
+        'idempresa': idempresa,
       });
     } catch (e) {
-      throw Exception('Error al crear contacto: ${e.toString()}');
+      throw Exception('Error al crear contacto: $e');
+    }
+  }
+  static Future<void> updateContacto(int idContacto, Map<String, dynamic> data) async {
+    try {
+      await _supabase
+          .from('contactoempresa')
+          .update(data)
+          .eq('idcontacto', idContacto);
+    } catch (e) {
+      throw Exception('Error al actualizar contacto: $e');
     }
   }
 
-  // Obtener contactos por empresa
-  Future<List<Map<String, dynamic>>> getContactosByEmpresa(
-    int idEmpresa,
-  ) async {
+  static Future<void> deleteContacto(int idContacto) async {
     try {
-      return await _supabase
+      await _supabase
           .from('contactoempresa')
-          .select()
-          .eq('idEmpresa', idEmpresa)
-          .order('nombre', ascending: true);
+          .delete()
+          .eq('idcontacto', idContacto);
     } catch (e) {
-      throw Exception('Error al obtener contactos: ${e.toString()}');
-    }
-  }
-
-  // Obtener contacto por ID
-  Future<Map<String, dynamic>> getContactoById(int idContacto) async {
-    try {
-      return await _supabase
-          .from('contactoempresa')
-          .select('*, empresa:empresas(nombre, descripcion)')
-          .eq('idContacto', idContacto)
-          .single();
-    } catch (e) {
-      throw Exception('Error al obtener contacto: ${e.toString()}');
+      throw Exception('Error al eliminar contacto: $e');
     }
   }
 }
