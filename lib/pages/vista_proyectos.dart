@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'info_proyecto.dart';
-import 'package:banco_de_proyectos/back/logica_proyectos.dart';
-import 'package:banco_de_proyectos/back/busquedas_proyectos.dart';
-import 'package:banco_de_proyectos/classes/proyecto.dart';
+import 'info_proyecto.dart'; // Make sure this path is correct
+import 'package:banco_de_proyectos/back/logica_proyectos.dart'; // Check if this is still needed, as ContactoServiceProyecto is now in busquedas_proyectos.dart
+import 'package:banco_de_proyectos/back/busquedas_proyectos.dart'; // This is where ContactoServiceProyecto is
+import 'package:banco_de_proyectos/classes/proyecto.dart'; // Your Proyecto class
 
 class ResumenProyectosPage extends StatefulWidget {
   const ResumenProyectosPage({super.key});
@@ -30,6 +30,22 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
   @override
   void initState() {
     super.initState();
+    // Initialize the future when the widget is created
+    _actualizarFiltrosYBusqueda();
+    // Add a listener to the search controller for real-time filtering
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    // This debounces the search slightly to avoid too many requests on every keystroke.
+    // For very fast typing, you might want to add a short delay (e.g., using Timer).
     _actualizarFiltrosYBusqueda();
   }
 
@@ -62,9 +78,10 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
 
   void _resetFilters() {
     setState(() {
-      filtros.updateAll((key, value) => true);
-      _searchController.clear();
-      _actualizarFiltrosYBusqueda();
+      // Set all filter values to false (off) to clear them
+      filtros.updateAll((key, value) => false);
+      _searchController.clear(); // Clear search text
+      _actualizarFiltrosYBusqueda(); // Re-fetch projects with no filters and empty search
     });
   }
 
@@ -101,7 +118,7 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
                   _buildSwitchTile('Híbrido'),
                   const SizedBox(height: 8),
                   _buildSectionTitle('Periodo'),
-                  const Text('2025'),
+                  const Text('2025'), // Consider making the year dynamic if needed
                   _buildSwitchTile('Ene-Jun'),
                   _buildSwitchTile('Ago-Dic'),
                   const Spacer(),
@@ -111,17 +128,17 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
                       ElevatedButton(
                         onPressed: () {
                           _actualizarFiltrosYBusqueda();
-                          Navigator.pop(context);
+                          Navigator.pop(context); // Close the drawer
                         },
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white),
                         child: const Text('Aplicar'),
                       ),
                       ElevatedButton(
                         onPressed: () {
                           _resetFilters();
-                          Navigator.pop(context);
+                          Navigator.pop(context); // Close the drawer
                         },
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.grey, foregroundColor: Colors.white),
                         child: const Text('Restablecer'),
                       ),
                     ],
@@ -165,7 +182,7 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
                       return const Center(child: Text('No hay proyectos disponibles con los filtros aplicados.'));
                     }
 
-                    final proyectos = snapshot.data!; // Aquí ya es List<Proyecto>
+                    final proyectos = snapshot.data!;
                     return ListView.builder(
                       itemCount: proyectos.length,
                       itemBuilder: (context, index) {
@@ -178,7 +195,7 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
                           margin: const EdgeInsets.only(bottom: 12),
                           child: ListTile(
                             title: Text(
-                              proyecto.nombreProyecto, // usa propiedades del objeto Proyecto
+                              proyecto.nombreProyecto,
                               style: const TextStyle(
                                 fontFamily: 'Poppins',
                                 fontWeight: FontWeight.w500,
@@ -225,7 +242,7 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.close), // Changed to a close icon for better UX
           onPressed: () => Navigator.pop(context),
         ),
       ],
@@ -249,6 +266,7 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
       onChanged: (val) {
         setState(() {
           filtros[label] = val;
+          // Apply filters immediately when a switch is toggled
           _actualizarFiltrosYBusqueda();
         });
       },
@@ -269,12 +287,8 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
           borderSide: BorderSide.none,
         ),
       ),
-      onChanged: (value) {
-        _actualizarFiltrosYBusqueda();
-      },
-      onSubmitted: (value) {
-        _actualizarFiltrosYBusqueda();
-      },
+      // onChanged is now handled by the listener in initState
+      // onSubmitted is not strictly needed for live search, but could be added if you want specific behavior on enter
     );
   }
 }

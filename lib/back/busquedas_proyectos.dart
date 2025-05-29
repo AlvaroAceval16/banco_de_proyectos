@@ -2,35 +2,40 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:banco_de_proyectos/classes/proyecto.dart';
 
 class ContactoServiceProyecto {
-    static Future<List<Proyecto>> obtenerProyectosConFiltros({
+  static Future<List<Proyecto>> obtenerProyectosConFiltros({
     String filtro = '',
     List<String>? estados,
     List<String>? modalidades,
     List<String>? periodos,
   }) async {
-    final response = await Supabase.instance.client.from('proyectos').select();
-    final data = List<Map<String, dynamic>>.from(response);
+    PostgrestFilterBuilder query = Supabase.instance.client.from('proyectos').select();
 
-    final queryLower = filtro.toLowerCase();
+    if (filtro.isNotEmpty) {
+    
+      query = query.or(
+        'nombreproyecto.ilike.%$filtro%,descripcion.ilike.%$filtro%,carreras.ilike.%$filtro%',
+      ); 
+    }
+    if (estados != null && estados.isNotEmpty) {
+      query = query.filter('estado', 'in', estados);
+    }
 
-    List<Map<String, dynamic>> filtered = data.where((proyecto) {
-      final nombre = proyecto['nombreProyecto']?.toLowerCase() ?? '';
-      final carreras = proyecto['carreras']?.toLowerCase() ?? '';
-      final modalidad = proyecto['modalidad'] ?? '';
-      final estado = proyecto['estado'] ?? '';
-      final periodo = proyecto['periodo'] ?? '';
+    if (modalidades != null && modalidades.isNotEmpty) {
+      query = query.filter('modalidad', 'in', modalidades);
+    }
 
-      bool matchesFiltro = filtro.isEmpty ||
-          nombre.contains(queryLower) ||
-          carreras.contains(queryLower);
+    if (periodos != null && periodos.isNotEmpty) {
+      query = query.filter('periodo', 'in', periodos);
+    }
 
-      bool matchesEstado = estados == null || estados.isEmpty || estados.contains(estado);
-      bool matchesModalidad = modalidades == null || modalidades.isEmpty || modalidades.contains(modalidad);
-      bool matchesPeriodo = periodos == null || periodos.isEmpty || periodos.contains(periodo);
+    try {
+      final response = await query;
+      final data = List<Map<String, dynamic>>.from(response);
 
-      return matchesFiltro && matchesEstado && matchesModalidad && matchesPeriodo;
-    }).toList();
-
-    return filtered.map((map) => Proyecto.fromMap(map)).toList();
+      return data.map((map) => Proyecto.fromMap(map)).toList();
+    } catch (e) {
+      print('Error al obtener proyectos con filtros desde Supabase: $e');
+      throw Exception('Failed to load projects: $e');
+    }
   }
 }
