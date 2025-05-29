@@ -16,7 +16,7 @@ class _ResumenContactoEmpresaPageState extends State<ResumenContactoEmpresaPage>
   @override
   void initState() {
     super.initState();
-    _obtenerContactosFuture = ContactoService.obtenerContacto();
+    _obtenerContactosFuture = ContactoService.obtenerContactos();
   }
 
   @override
