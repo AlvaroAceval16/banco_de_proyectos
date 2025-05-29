@@ -1,13 +1,6 @@
-import 'package:banco_de_proyectos/back/logica_proyectos.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-
-final supabase = Supabase.instance.client;
-final _proyectoService = ProyectoService();
-
-void main() => runApp(FormularioProyectoApp());
-
-
+// Importa tu clase de servicio de proyecto
+import 'package:banco_de_proyectos/back/logica_proyectos.dart'; // Ajusta la ruta si es necesario
 
 class FormularioProyectoApp extends StatelessWidget {
   @override
@@ -15,76 +8,146 @@ class FormularioProyectoApp extends StatelessWidget {
     return MaterialApp(
       title: 'Formulario Proyecto',
       debugShowCheckedModeBanner: false,
-      home: FormularioProyecto(),
+      home: FormularioProyecto(), // Renombra tu clase de formulario aquí
     );
   }
 }
 
 class FormularioProyecto extends StatefulWidget {
+  // Renombra tu clase de formulario aquí
   @override
   _FormularioProyectoState createState() => _FormularioProyectoState();
 }
 
 class _FormularioProyectoState extends State<FormularioProyecto> {
   final _formKey = GlobalKey<FormState>();
+  final ProyectoService _proyectoService =
+      ProyectoService(); // Instancia de tu servicio
 
-  final TextEditingController nombreProyectoController = TextEditingController();
-  final TextEditingController descripcionController = TextEditingController();
-  final TextEditingController fechaController = TextEditingController();
-  final TextEditingController apoyoController = TextEditingController();
+  // Variables de estado para el dropdown de empresas
+  List<Map<String, dynamic>> _empresasDropdownList = [];
+  int? _selectedEmpresaId; // Aquí guardaremos el ID de la empresa seleccionada
+  String?
+  _selectedEmpresaNombre; // Opcional: para mostrar el nombre seleccionado
+  bool _isLoadingEmpresas = true; // Para manejar el estado de carga de empresas
+
+  // Controladores para los campos de texto del PROYECTO (ejemplo)
+  final TextEditingController nombreProyectoController =
+      TextEditingController();
+  final TextEditingController descripcionProyectoController =
+      TextEditingController();
   final TextEditingController tecnologiasController = TextEditingController();
+  final TextEditingController apoyoEconomicoController =
+      TextEditingController();
+  final TextEditingController plazosEntregaController = TextEditingController();
+  // ... más controladores para campos de proyecto como modalidad, carrera, etc.
 
-  String? carreraSeleccionada;
-  String? periodoSeleccionado;
-  String? tipoProyectoSeleccionado;
-  String? plazoSeleccionado;
-  String? modalidadSeleccionada;
+  // Variables para los Dropdowns de proyecto (ejemplo)
+  String? _selectedModalidad;
+  String? _selectedCarrera;
+  String? _selectedPeriodo;
 
+  // Ya tienes estas si las necesitas para el proyecto (ejemplo de la hora, pero para proyecto no aplica)
+  // TimeOfDay horaInicio = TimeOfDay(hour: 9, minute: 0);
+  // TimeOfDay horaFin = TimeOfDay(hour: 17, minute: 0);
 
+  @override
+  void initState() {
+    super.initState();
+    _fetchEmpresasForDropdown(); // Cargar empresas al iniciar el formulario
+    // ... inicializar otros controladores de proyecto si es necesario
+  }
 
-Future<void> guardarProyecto() async {
-  if (_formKey.currentState!.validate()) {
+  @override
+  void dispose() {
+    // Disponer controladores de proyecto
+    nombreProyectoController.dispose();
+    descripcionProyectoController.dispose();
+    tecnologiasController.dispose();
+    apoyoEconomicoController.dispose();
+    plazosEntregaController.dispose();
+    super.dispose();
+  }
+
+  // Nuevo método para cargar la lista de empresas para el Dropdown
+  Future<void> _fetchEmpresasForDropdown() async {
+    setState(() {
+      _isLoadingEmpresas = true;
+    });
     try {
-      await _proyectoService.guardarProyecto(
-        nombre: nombreProyectoController.text,
-        descripcion: descripcionController.text,
-        modalidad: modalidadSeleccionada,
-        carrera: carreraSeleccionada,
-        periodo: periodoSeleccionado,
-        fechasolicitud: fechaController.text,
-        apoyoeconomico: apoyoController.text,
-        plazosentrega: plazoSeleccionado,
-        tecnologias: tecnologiasController.text,
-      );
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('✅ Proyecto guardado correctamente')),
-      );
-      
-      // Opcional: Limpiar el formulario después de guardar
-      _formKey.currentState?.reset();
-      
-      // Opcional: Navegar a otra pantalla
-      // Navigator.pop(context);
-
+      final empresas = await ProyectoService.obtenerEmpresasParaDropdown();
+      setState(() {
+        _empresasDropdownList = empresas;
+        _isLoadingEmpresas = false;
+      });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('❌ Error: ${e.toString()}')),
-      );
+      print('Error al cargar empresas para el dropdown: $e');
+      setState(() {
+        _isLoadingEmpresas = false;
+        // Puedes mostrar un SnackBar o AlertDialog si hay un error
+      });
     }
   }
-}
 
+  // Método para guardar el proyecto
+  Future<void> _guardarProyecto() async {
+    if (_formKey.currentState!.validate()) {
+      // Validar que se haya seleccionado una empresa
+      if (_selectedEmpresaId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Por favor, seleccione una empresa.")),
+        );
+        return;
+      }
 
+      // Ejemplo de datos a guardar (adapta esto a tus campos reales del proyecto)
+      final String nombre = nombreProyectoController.text;
+      final String descripcion = descripcionProyectoController.text;
+      final String tecnologias = tecnologiasController.text;
+      final String apoyoEconomico = apoyoEconomicoController.text;
+      final String plazosEntrega = plazosEntregaController.text;
+      final String fechasolicitud =
+          DateTime.now().toIso8601String(); // Fecha actual
 
-  final inputDecoration = InputDecoration(
-    filled: true,
-    fillColor: Color.fromARGB(80, 147, 143, 153),
-    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0), borderSide: BorderSide.none),
-  );
+      try {
+        await _proyectoService.guardarProyecto(
+          nombre: nombre,
+          descripcion: descripcion,
+          modalidad:
+              _selectedModalidad, // Asegúrate de tener un dropdown para esto
+          carrera: _selectedCarrera, // Asegúrate de tener un dropdown para esto
+          periodo: _selectedPeriodo, // Asegúrate de tener un dropdown para esto
+          fechasolicitud: fechasolicitud,
+          apoyoeconomico: apoyoEconomico,
+          plazosentrega: plazosEntrega,
+          tecnologias: tecnologias,
+          idempresa:
+              _selectedEmpresaId, // <--- EL ID DE LA EMPRESA SELECCIONADA
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Proyecto guardado exitosamente!")),
+        );
+        Navigator.pop(context); // Regresar a la pantalla anterior
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error al guardar el proyecto: $e")),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final inputDecoration = InputDecoration(
+      filled: true,
+      fillColor: const Color.fromARGB(80, 147, 143, 153),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10.0),
+        borderSide: BorderSide.none,
+      ),
+    );
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -92,10 +155,14 @@ Future<void> guardarProyecto() async {
         elevation: 0,
         title: Row(
           children: [
-            Icon(Icons.menu, color: Colors.black),
-            SizedBox(width: 10),
-            Text(
-              "Formulario de Proyecto",
+            IconButton(
+              // Agregamos un botón de regreso
+              icon: const Icon(Icons.arrow_back, color: Colors.black),
+              onPressed: () => Navigator.pop(context),
+            ),
+            const SizedBox(width: 10),
+            const Text(
+              "Registro de Proyecto", // Título para el formulario de proyecto
               style: TextStyle(
                 fontFamily: 'Poppins',
                 fontWeight: FontWeight.w600,
@@ -106,88 +173,225 @@ Future<void> guardarProyecto() async {
           ],
         ),
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(20),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _seccion("Datos Básicos"),
-              _campoTexto("Nombre del Proyecto", "Aplicacion web", nombreProyectoController),
-              _comboBox("Carrera","ISC", carreraSeleccionada, ["Sistemas", "Industrial", "Electrónica"], (val) {
-                setState(() => carreraSeleccionada = val);
-              }),
-              _campoTexto("Descripción", "Desarrollar una app para la compañia", descripcionController, maxLines: 4),
-              _comboBox("Periodo semestral","ENE-JUN", periodoSeleccionado, ["ENE-JUN", "AGO-DIC"], (val) {
-                setState(() => periodoSeleccionado = val);
-              }),
-              _campoTexto("Fecha de Solicitud", "DD/MM/YYYY", fechaController, keyboardType: TextInputType.datetime),
+      body:
+          _isLoadingEmpresas
+              ? const Center(child: CircularProgressIndicator())
+              : SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // --- Campos para el Proyecto (ejemplos) ---
+                      const Text(
+                        "Datos del Proyecto",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontFamily: 'Poppins',
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      _campoTexto(
+                        "Nombre del Proyecto",
+                        "Proyecto X",
+                        nombreProyectoController,
+                        inputDecoration,
+                      ),
+                      _campoTexto(
+                        "Descripción",
+                        "Descripción detallada del proyecto",
+                        descripcionProyectoController,
+                        inputDecoration,
+                        maxLines: 3,
+                      ),
+                      _campoTexto(
+                        "Tecnologías",
+                        "Flutter, Dart, Supabase",
+                        tecnologiasController,
+                        inputDecoration,
+                      ),
+                      _campoTexto(
+                        "Apoyo Económico",
+                        "\$5000",
+                        apoyoEconomicoController,
+                        inputDecoration,
+                      ),
+                      _campoTexto(
+                        "Plazos de Entrega",
+                        "3 meses",
+                        plazosEntregaController,
+                        inputDecoration,
+                      ),
 
-              SizedBox(height: 20),
-              _seccion("Detalles del Proyecto"),
-              _campoTexto("Tipo de Proyecto", "Base de Datos", TextEditingController()),
-              _campoTexto("¿Apoyo económico?", "2000 (mensualmente)", apoyoController),
-              _comboBox("Plazos de Entrega","12 meses", plazoSeleccionado, ["1 mes", "2 meses", "3 meses"], (val) {
-                setState(() => plazoSeleccionado = val);
-              }),
-              _campoTexto("Tecnologías", "java", tecnologiasController),
-              _comboBox("Modalidad","Presencial", modalidadSeleccionada, ["Presencial", "Remoto", "Hibrida"], (val) {
-                setState(() => modalidadSeleccionada = val);
-              }),
+                      // --- Dropdown para Modalidad (ejemplo) ---
+                      const SizedBox(height: 10),
+                      DropdownButtonFormField<String>(
+                        decoration: inputDecoration.copyWith(
+                          hintText: "Modalidad",
+                        ),
+                        value: _selectedModalidad,
+                        items:
+                            ["Presencial", "Remoto", "Hibrida"].map((
+                              String modalidad,
+                            ) {
+                              return DropdownMenuItem<String>(
+                                value: modalidad,
+                                child: Text(modalidad),
+                              );
+                            }).toList(),
+                        onChanged: (valor) {
+                          setState(() {
+                            _selectedModalidad = valor;
+                          });
+                        },
+                        validator:
+                            (value) =>
+                                value == null
+                                    ? 'Seleccione una modalidad'
+                                    : null,
+                      ),
+                      // --- Dropdown para Carrera (ejemplo) ---
+                      const SizedBox(height: 10),
+                      DropdownButtonFormField<String>(
+                        decoration: inputDecoration.copyWith(
+                          hintText: "Carrera",
+                        ),
+                        value: _selectedCarrera,
+                        items:
+                            [
+                              "Ing. Sistemas",
+                              "Ing en TICS",
+                              "Ing. Informática",
+                            ].map((String carrera) {
+                              return DropdownMenuItem<String>(
+                                value: carrera,
+                                child: Text(carrera),
+                              );
+                            }).toList(),
+                        onChanged: (valor) {
+                          setState(() {
+                            _selectedCarrera = valor;
+                          });
+                        },
+                        validator:
+                            (value) =>
+                                value == null ? 'Seleccione una carrera' : null,
+                      ),
+                      // --- Dropdown para Periodo (ejemplo) ---
+                      const SizedBox(height: 10),
+                      DropdownButtonFormField<String>(
+                        decoration: inputDecoration.copyWith(
+                          hintText: "Periodo",
+                        ),
+                        value: _selectedPeriodo,
+                        items:
+                            ["Enero-Junio", "Agosto-Diciembre"].map((
+                              String periodo,
+                            ) {
+                              return DropdownMenuItem<String>(
+                                value: periodo,
+                                child: Text(periodo),
+                              );
+                            }).toList(),
+                        onChanged: (valor) {
+                          setState(() {
+                            _selectedPeriodo = valor;
+                          });
+                        },
+                        validator:
+                            (value) =>
+                                value == null ? 'Seleccione un periodo' : null,
+                      ),
 
-              SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Formulario válido")));
-                      guardarProyecto();
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF4A90E2),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    padding: EdgeInsets.symmetric(vertical: 15),
-                  ),
-                  child: Text(
-                    "Guardar",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontFamily: 'Poppins',
-                      fontWeight: FontWeight.w500,
-                      color: Colors.white,
-                    ),
+                      // --- Sección de Datos de Empresa ---
+                      const SizedBox(height: 20),
+                      const Text(
+                        "Datos de Empresa",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontFamily: 'Poppins',
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      // --- Dropdown para SELECCIONAR EMPRESA ---
+                      DropdownButtonFormField<int>(
+                        // El tipo del valor es int (el ID de la empresa)
+                        decoration: inputDecoration.copyWith(
+                          hintText: "Empresa",
+                        ),
+                        value: _selectedEmpresaId, // Usa el ID seleccionado
+                        items:
+                            _empresasDropdownList.map((
+                              Map<String, dynamic> empresa,
+                            ) {
+                              return DropdownMenuItem<int>(
+                                value:
+                                    empresa['idempresa']
+                                        as int, // El valor es el ID de la empresa
+                                child: Text(
+                                  empresa['nombre'] as String,
+                                ), // Muestra el nombre
+                              );
+                            }).toList(),
+                        onChanged: (int? valor) {
+                          setState(() {
+                            _selectedEmpresaId = valor;
+                            // Opcional: Si quieres guardar el nombre también
+                            _selectedEmpresaNombre =
+                                _empresasDropdownList.firstWhere(
+                                      (e) => e['idempresa'] == valor,
+                                    )['nombre']
+                                    as String?;
+                          });
+                        },
+                        validator:
+                            (value) =>
+                                value == null ? 'Seleccione una empresa' : null,
+                      ),
+
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed:
+                              _guardarProyecto, // Llama al nuevo método de guardar
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF4A90E2),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 15),
+                          ),
+                          child: const Text(
+                            "Guardar Proyecto",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontFamily: 'Poppins',
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 
-  Widget _seccion(String titulo) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          titulo,
-          style: TextStyle(
-            fontSize: 16,
-            fontFamily: 'Poppins',
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        SizedBox(height: 10),
-      ],
-    );
-  }
-
-  Widget _campoTexto(String label, String hint, TextEditingController controller,
-      {TextInputType keyboardType = TextInputType.text, int maxLines = 1}) {
+  // Función auxiliar para los campos de texto
+  Widget _campoTexto(
+    String label,
+    String hintText,
+    TextEditingController controller,
+    InputDecoration decoration, {
+    TextInputType keyboardType = TextInputType.text,
+    int? maxLines = 1,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Column(
@@ -195,52 +399,21 @@ Future<void> guardarProyecto() async {
         children: [
           Text(
             label,
-            style: TextStyle(
+            style: const TextStyle(
               fontFamily: 'Poppins',
               fontWeight: FontWeight.w500,
               fontSize: 16,
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           TextFormField(
             controller: controller,
+            decoration: decoration.copyWith(hintText: hintText),
             keyboardType: keyboardType,
             maxLines: maxLines,
-            decoration: inputDecoration.copyWith(hintText: hint),
-            validator: (value) => value == null || value.isEmpty ? 'Campo obligatorio' : null,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _comboBox(String label,String elfakinhint2, String? value, List<String> items, Function(String?) onChanged) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              fontWeight: FontWeight.w500,
-              fontSize: 16,
-            ),
-          ),
-          SizedBox(height: 8),
-          DropdownButtonFormField<String>(
-            decoration: inputDecoration,
-            value: value,
-            hint: Text(elfakinhint2),
-            items: items.map((String item) {
-              return DropdownMenuItem<String>(
-                value: item,
-                child: Text(item),
-              );
-            }).toList(),
-            onChanged: onChanged,
-            validator: (value) => value == null ? 'Seleccione una opción' : null,
+            validator:
+                (value) =>
+                    value == null || value.isEmpty ? 'Campo obligatorio' : null,
           ),
         ],
       ),
