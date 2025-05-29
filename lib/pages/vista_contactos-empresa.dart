@@ -1,4 +1,5 @@
 import 'package:banco_de_proyectos/back/logica_contactoEmpresa.dart';
+import 'package:banco_de_proyectos/back/busquedas_contactoEmpresa.dart';
 import 'package:banco_de_proyectos/classes/contacto_empresa.dart';
 import 'package:banco_de_proyectos/pages/info_contacto-empresa.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +20,7 @@ class _ResumenContactoEmpresaPageState
   @override
   void initState() {
     super.initState();
-    _obtenerContactosFuture = ContactoService.obtenerContactos();
+    _fetchContacts(); 
   }
 
   @override
@@ -28,9 +29,9 @@ class _ResumenContactoEmpresaPageState
     super.dispose();
   }
 
-  void _fetchContacts() {
+  void _fetchContacts({String filtro = ''}) {
     setState(() {
-      _obtenerContactosFuture = ContactoService.obtenerContactos();
+      _obtenerContactosFuture = ContactoServiceEmpresa.obtenerContactos(filtro: filtro);
     });
   }
 
@@ -78,8 +79,11 @@ class _ResumenContactoEmpresaPageState
                     borderSide: BorderSide.none,
                   ),
                 ),
+                onChanged: (value) {
+                  _fetchContacts(filtro: value);
+                },
                 onSubmitted: (value) {
-                  _fetchContacts();
+                  _fetchContacts(filtro: value);
                 },
               ),
               const SizedBox(height: 16),
@@ -122,18 +126,15 @@ class _ResumenContactoEmpresaPageState
                             subtitle: Text(contacto.puesto),
                             trailing: const Icon(Icons.arrow_forward, size: 20),
                             onTap: () {
-                              // Navegación corregida con nombre de ruta
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder:
-                                      (context) => InfoContactoEmpresa(
-                                        contacto: contacto,
-                                      ),
+                                  builder: (context) => InfoContactoEmpresa(
+                                    contacto: contacto,
+                                  ),
                                 ),
                               ).then((_) {
-                                // Esto se ejecuta cuando regresas de InfoContactoEmpresa
-                                _fetchContacts(); // Recarga la lista por si hubo cambios
+                                _fetchContacts(filtro: _searchController.text);
                               });
                             },
                           ),
@@ -147,8 +148,7 @@ class _ResumenContactoEmpresaPageState
           ),
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed:
-              () => Navigator.pushNamed(context, '/form_contacto_empresa'),
+          onPressed: () => Navigator.pushNamed(context, '/form_contacto_empresa'),
           backgroundColor: const Color(0xFF5285E8),
           foregroundColor: Colors.white,
           shape: const CircleBorder(),
