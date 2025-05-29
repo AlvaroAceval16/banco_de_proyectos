@@ -83,7 +83,7 @@ class MyApp extends StatelessWidget {
           }
         }
 
-        if (settings.name == '/info_contacto_empresa') {
+        if (settings.name == '/info_contacto-empresa') {
           if (args is ContactoEmpresa) {
             return MaterialPageRoute(
               builder: (context) => InfoContactoEmpresa(contacto: args),
@@ -92,7 +92,6 @@ class MyApp extends StatelessWidget {
             return _errorRoute('Objeto ContactoEmpresa no válido.');
           }
         }
-
         return _errorRoute('Ruta no encontrada');
       },
       title: 'Material App',
