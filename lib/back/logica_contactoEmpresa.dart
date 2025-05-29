@@ -49,7 +49,21 @@ void cargarDatosContacto() async {
 */
 */
 class ContactoService {
-  final _supabase = Supabase.instance.client;
+  static final _supabase = Supabase.instance.client;
+
+  //Obtener proyectos para vista
+  static Future<List<Map<String, dynamic>>> obtenerContacto() async {
+    try {
+      final response = await _supabase
+          .from('contactoEmpresa')
+          .select('*')
+          .order('nombre', ascending: true);
+
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      throw Exception('Error al cargar los contactos: $e');
+    }
+  }
 
   // Crear nuevo contacto
   Future<void> createContacto({

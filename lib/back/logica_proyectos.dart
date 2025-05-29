@@ -65,7 +65,7 @@ void cargarDatosProyecto() async {
 class ProyectoService {
   static final _supabase = Supabase.instance.client;
 
-    //Obtener proyectos para vista
+  //Obtener proyectos para vista
   static Future<List<Map<String, dynamic>>> obtenerProyectos() async {
     try {
       final response = await _supabase
