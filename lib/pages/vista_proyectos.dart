@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'info_proyecto.dart';
 import 'package:banco_de_proyectos/back/logica_proyectos.dart';
+import 'package:banco_de_proyectos/classes/proyecto.dart';
 
 class ResumenProyectosPage extends StatefulWidget {
   const ResumenProyectosPage({super.key});
@@ -110,7 +111,8 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
                     return ListView.builder(
                       itemCount: proyectos.length,
                       itemBuilder: (context, index) {
-                        final proyecto = proyectos[index];
+                        final proyectoMap = proyectos[index];
+                        final proyecto = Proyecto.fromMap(proyectoMap);
                         return Card(
                           color: Theme.of(context).cardColor,
                           elevation: 0,
@@ -120,22 +122,20 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
                           margin: const EdgeInsets.only(bottom: 12),
                           child: ListTile(
                             title: Text(
-                              proyecto['nombreproyecto'] ?? 'Proyecto sin nombre',
+                              proyecto.nombreProyecto,
                               style: const TextStyle(
                                 fontFamily: 'Poppins',
                                 fontWeight: FontWeight.w500,
                                 fontSize: 16,
                               ),
                             ),
-                            subtitle: Text(
-                              proyecto['descripcion'] ?? 'Sin descripción',
-                            ),
+                            subtitle: Text(proyecto.descripcion),
                             trailing: const Icon(Icons.arrow_forward, size: 20),
                             onTap: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => InfoProyecto(),
+                                  builder: (context) => InfoProyecto(proyecto: proyecto),
                                 ),
                               );
                             },

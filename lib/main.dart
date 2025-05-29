@@ -9,6 +9,7 @@ import 'package:banco_de_proyectos/pages/login_page.dart';
 import 'package:banco_de_proyectos/pages/vista_contactos-empresa.dart';
 import 'package:banco_de_proyectos/pages/vista_empresas.dart';
 import 'package:banco_de_proyectos/pages/vista_proyectos.dart';
+import 'package:banco_de_proyectos/classes/proyecto.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -47,33 +48,48 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
+      initialRoute: '/login',
       routes: {
         '/dashboard': (context) => DashboardScreen(),
         '/form_empresa': (context) => FormularioEmpresa(),
         '/form_proyecto': (context) => FormularioProyecto(),
         '/form_contacto_empresa': (context) => FormularioContactoEmpresa(),
         '/info_contacto_empresa': (context) => InfoContactoEmpresa(),
-        '/info_proyecto': (context) => InfoProyecto(),
-        //'/info_empresa': (context) => InfoEmpresa(),
-        '/info_empresa': (context) {
-          // Extract the arguments passed to the route
-          final args = ModalRoute.of(context)!.settings.arguments;
-          // Ensure the arguments are an int (the empresaId)
-          if (args is int) {
-            return InfoEmpresa(idEmpresa: args);
-          }
-          // Handle the case where the ID is not provided or is of the wrong type.
-          // You might want to show an error page or navigate back.
-          return const Scaffold(
-            body: Center(
-              child: Text('Error: ID de empresa no proporcionado o inválido.'),
-            ),
-          );
-        },
         '/vista_proyectos': (context) => ResumenProyectosPage(),
         '/vista_empresas': (context) => ResumenEmpresasPage(),
         '/vista_contacto_empresa': (context) => ResumenContactoEmpresaPage(),
         '/login': (context) => LoginPage(),
+      },
+      onGenerateRoute: (settings) {
+        if (settings.name == '/info_proyecto') {
+          final proyecto = settings.arguments as Proyecto;
+          return MaterialPageRoute(
+            builder: (context) => InfoProyecto(proyecto: proyecto),
+          );
+        }
+
+        if (settings.name == '/info_empresa') {
+          final args = settings.arguments;
+          if (args is int) {
+            return MaterialPageRoute(
+              builder: (context) => InfoEmpresa(idEmpresa: args),
+            );
+          } else {
+            return MaterialPageRoute(
+              builder: (_) => const Scaffold(
+                body: Center(
+                  child: Text('Error: ID de empresa no proporcionado o inválido.'),
+                ),
+              ),
+            );
+          }
+        }
+
+        return MaterialPageRoute(
+          builder: (_) => const Scaffold(
+            body: Center(child: Text('Ruta no encontrada')),
+          ),
+        );
       },
       title: 'Material App',
       home: LoginPage(),
