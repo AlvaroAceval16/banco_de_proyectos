@@ -297,10 +297,33 @@ class ProyectoService {
                 DateTime.now().toIso8601String(), // Record deletion date
           })
           .eq('idproyecto', idProyecto);
-      print('Empresa eliminada lógicamente exitosamente!');
+      print('Proyecto eliminado lógicamente exitosamente!');
     } catch (e) {
-      print('Error al eliminar lógicamente la empresa: $e');
-      throw Exception('Error al eliminar la empresa: $e');
+      print('Error al eliminar lógicamente el proyecto: $e');
+      throw Exception('Error al eliminar el proyecto: $e');
     }
   }
+
+//Eliminacion logica infoproyecto
+Future<void> eliminarProyectoinfoLogic(int idproyecto) async {
+    try {
+      await _supabase
+          .from('proyectos')
+          .update({
+            'Abierto': false, // Set 'activo' to false for logical deletion
+            'fechaeliminacion':
+                DateTime.now().toIso8601String(), // Record deletion date
+          })
+          .eq('idproyecyo', idproyecto);
+      print('Proyecto eliminado lógicamente exitosamente!');
+    } catch (e) {
+      print('Error al eliminar lógicamente el proyecto: $e');
+      throw Exception('Error al eliminar el proyecto: $e');
+    }
+  }
+
+
 }
+
+
+
