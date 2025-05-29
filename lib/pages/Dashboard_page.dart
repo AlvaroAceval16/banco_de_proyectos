@@ -1,9 +1,67 @@
 import 'package:banco_de_proyectos/consts/text_styles.dart';
 import 'package:banco_de_proyectos/components/main_drawer.dart';
 import 'package:banco_de_proyectos/components/stats_card.dart';
+import 'package:banco_de_proyectos/back/logica_proyectos.dart';
 import 'package:flutter/material.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
+  @override
+  _DashboardScreenState createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  List<Map<String, dynamic>> proyectos = [];
+  bool isLoading = true;
+  String errorMessage = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarProyectosRecientes();
+  }
+
+  Future<void> _cargarProyectosRecientes() async {
+    try {
+      // Obtener todos los proyectos ordenados por fecha de creación (más recientes primero)
+      final todosProyectos = await ProyectoService.obtenerProyectosOrdenadosPorFecha();
+      
+      // Tomar los 3 más recientes
+      final proyectosRecientes = todosProyectos.take(3).toList();
+
+      setState(() {
+        proyectos = proyectosRecientes;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        errorMessage = 'Error al cargar proyectos: $e';
+        isLoading = false;
+      });
+    }
+  }
+
+  // Formatear fecha a texto amigable
+  String formatFecha(DateTime fecha) {
+    final hoy = DateTime.now();
+    final ayer = hoy.subtract(Duration(days: 1));
+    
+    if (fecha.year == hoy.year && fecha.month == hoy.month && fecha.day == hoy.day) {
+      return 'Hoy';
+    } else if (fecha.year == ayer.year && fecha.month == ayer.month && fecha.day == ayer.day) {
+      return 'Ayer';
+    } else {
+      return '${fecha.day} ${_getNombreMes(fecha.month)}.';
+    }
+  }
+
+  String _getNombreMes(int mes) {
+    const meses = [
+      'ene', 'feb', 'mar', 'abr', 'may', 'jun', 
+      'jul', 'ago', 'sep', 'oct', 'nov', 'dic'
+    ];
+    return meses[mes - 1];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -111,9 +169,22 @@ class DashboardScreen extends StatelessWidget {
               ],
             ),
             SizedBox(height: 10),
-            _projectItem("Proyecto A", "Hoy", context),
-            _projectItem("Proyecto B", "20 abr.", context),
-            _projectItem("Proyecto C", "10 abr.", context),
+            // Mostrar loading, error o proyectos
+            if (isLoading)
+              Center(child: CircularProgressIndicator())
+            else if (errorMessage.isNotEmpty)
+              Text(errorMessage, style: TextStyle(color: Colors.red))
+            else if (proyectos.isEmpty)
+              Text("No hay proyectos recientes")
+            else
+              ...proyectos.map((proyecto) => 
+                _projectItem(
+                  proyecto['nombreproyecto'], 
+                  formatFecha(DateTime.parse(proyecto['fecha_creacion'])), 
+                  context,
+                  descripcion: proyecto['descripcion'] ?? "Sin descripción",
+                )
+              ).toList(),
             SizedBox(height: 30),
             Text(
               "Acciones Rápidas",
@@ -137,7 +208,7 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _projectItem(String title, String date, BuildContext context) {
+  Widget _projectItem(String title, String date, BuildContext context, {String? descripcion}) {
     return Card(
       color: Theme.of(context).cardColor,
       elevation: 0,
@@ -160,7 +231,7 @@ class DashboardScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    "Lorem ipsum dolor sit amet, consectetur",
+                    descripcion ?? "Sin descripción disponible",
                     style: TextStyle(
                       fontFamily: 'Poppins',
                       fontSize: 12,
@@ -183,7 +254,6 @@ class DashboardScreen extends StatelessWidget {
                 ),
               ),
             ),
-
             const Icon(Icons.arrow_forward, size: 16),
           ],
         ),
