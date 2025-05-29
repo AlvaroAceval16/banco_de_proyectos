@@ -26,6 +26,7 @@ class LogicaListaEmpresas {
       final response = await _supabase
           .from('empresas')
           .select('*')
+          .eq('activo', true) // Solo empresas activas
           .inFilter('tamano', tamanos);
 
       return List<Map<String, dynamic>>.from(response);
