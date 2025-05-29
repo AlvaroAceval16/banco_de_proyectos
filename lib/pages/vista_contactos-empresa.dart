@@ -1,3 +1,6 @@
+import 'package:banco_de_proyectos/back/logica_contactoEmpresa.dart';
+import 'package:banco_de_proyectos/classes/contacto_empresa.dart';
+import 'package:banco_de_proyectos/pages/info_contacto-empresa.dart';
 import 'package:flutter/material.dart';
 
 class ResumenContactoEmpresaPage extends StatefulWidget {
@@ -8,13 +11,7 @@ class ResumenContactoEmpresaPage extends StatefulWidget {
 }
 
 class _ResumenContactoEmpresaPageState extends State<ResumenContactoEmpresaPage> {
-  final List<Map<String, String>> contactos = List.generate(
-    8,
-    (index) => {
-      'nombre': 'Contacto Empresa ${index + 1}',
-      'descripcion': 'Descripción del contacto de la empresa',
-    },
-  );
+  late Future<List<Map<String, dynamic>>> _obtenerContactosFuture;
 
   final Map<String, bool> filtros = {
     'Empresa A': true,
@@ -24,11 +21,10 @@ class _ResumenContactoEmpresaPageState extends State<ResumenContactoEmpresaPage>
     'Empresa E': true,
   };
 
-  List<Map<String, String>> get contactosFiltrados {
-    return contactos.where((contacto) {
-      // Lógica de filtrado puede agregarse aquí
-      return true;
-    }).toList();
+  @override
+  void initState() {
+    super.initState();
+    _obtenerContactosFuture = ContactoService.obtenerContacto();
   }
 
   @override
@@ -128,27 +124,51 @@ class _ResumenContactoEmpresaPageState extends State<ResumenContactoEmpresaPage>
               ),
               const SizedBox(height: 16),
               Expanded(
-                child: ListView.builder(
-                  itemCount: contactosFiltrados.length,
-                  itemBuilder: (context, index) {
-                    final contacto = contactosFiltrados[index];
-                    return Card(
-                      color: Theme.of(context).cardColor,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),                      ),
-                      margin: const EdgeInsets.only(bottom: 12),
-                      child: ListTile(
-                        title: Text(contacto['nombre']!,
-                        style: const TextStyle(
-                          fontFamily: 'Poppins',
-                          fontWeight: FontWeight.w500, // Semibold
-                          fontSize: 16,
-                        ),),
-                        subtitle: Text(contacto['descripcion']!),
-                        trailing: const Icon(Icons.arrow_forward, size: 20),
-                        onTap: () => Navigator.pushNamed(context, '/info_contacto_empresa'),
-                      ),
+                child: FutureBuilder<List<Map<String, dynamic>>>(
+                  future: _obtenerContactosFuture,
+                  builder: (context, snapshot){
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const Center(child: Text('No hay contactos disponibles.'));
+                    }
+                    final contactos = snapshot.data!;
+                    return ListView.builder(
+                      itemCount: contactos.length,
+                      itemBuilder: (context, index) {
+                        final contactoMap = contactos[index];
+                        final contacto = ContactoEmpresa.fromMap(contactoMap);
+                        return Card(
+                          color: Theme.of(context).cardColor,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          margin: const EdgeInsets.only(bottom: 12),
+                          child: ListTile(
+                            title: Text(
+                              '${contacto.nombre} ${contacto.apellidopaterno} ${contacto.apellidomaterno}',
+                              style: const TextStyle(
+                                fontFamily: 'Poppins',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 16,
+                              ),
+                            ),
+                            subtitle: Text(contacto.puesto),
+                            trailing: const Icon(Icons.arrow_forward, size: 20),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => InfoContactoEmpresaApp(contacto: contacto),
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
                     );
                   },
                 ),

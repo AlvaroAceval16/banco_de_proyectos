@@ -55,7 +55,7 @@ class ContactoService {
   static Future<List<Map<String, dynamic>>> obtenerContacto() async {
     try {
       final response = await _supabase
-          .from('contactoEmpresa')
+          .from('contactoempresa')
           .select('*')
           .order('nombre', ascending: true);
 
@@ -78,7 +78,7 @@ class ContactoService {
     required String comentarios,
   }) async {
     try {
-      await _supabase.from('contactoEmpresa').insert({
+      await _supabase.from('contactoempresa').insert({
         'idEmpresa': idEmpresa ?? 1,
         'nombre': nombre,
         'apellidoPaterno': apellidoPaterno,
@@ -100,7 +100,7 @@ class ContactoService {
   ) async {
     try {
       return await _supabase
-          .from('contactoEmpresa')
+          .from('contactoempresa')
           .select()
           .eq('idEmpresa', idEmpresa)
           .order('nombre', ascending: true);
@@ -113,7 +113,7 @@ class ContactoService {
   Future<Map<String, dynamic>> getContactoById(int idContacto) async {
     try {
       return await _supabase
-          .from('contactoEmpresa')
+          .from('contactoempresa')
           .select('*, empresa:empresas(nombre, descripcion)')
           .eq('idContacto', idContacto)
           .single();
