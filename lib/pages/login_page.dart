@@ -1,3 +1,4 @@
+import 'package:banco_de_proyectos/back/autenticacion_login.dart';
 import 'package:banco_de_proyectos/consts/text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:banco_de_proyectos/back/empresa_service.dart';
@@ -10,6 +11,27 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  
+  final AutenticacionLogin autenticacionLogin = AutenticacionLogin();
+
+  void handledLogin() async {
+
+    final email = emailController.text.trim();
+    final password = passwordController.text;
+
+    final error = await autenticacionLogin.login(email, password);
+
+    if (error == null) {
+      Navigator.pushReplacementNamed(context, '/dashboard');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error)),
+      );
+    }
+  }
+  
   @override
   void initState() {
     super.initState();
@@ -39,6 +61,7 @@ class _LoginPageState extends State<LoginPage> {
                     child: Column(
                       children: [
                         TextFormField(
+                          controller: emailController,
                           decoration: const InputDecoration(
                             labelText: 'Correo electrónico',
                             border: OutlineInputBorder(),
@@ -47,6 +70,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         const SizedBox(height: 20),
                         TextFormField(
+                          controller: passwordController,
                           decoration: const InputDecoration(
                             labelText: 'Contraseña',
                             border: OutlineInputBorder(),
@@ -69,12 +93,13 @@ class _LoginPageState extends State<LoginPage> {
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               ElevatedButton(
-                                onPressed: () {
+                                onPressed: handledLogin,
+                                /*onPressed: () {
                                   Navigator.pushReplacementNamed(
                                     context,
                                     '/dashboard',
                                   );
-                                },
+                                },*/
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xff647AFF),
                                   padding: const EdgeInsets.symmetric(
