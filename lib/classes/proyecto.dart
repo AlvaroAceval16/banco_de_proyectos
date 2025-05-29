@@ -5,7 +5,7 @@ class Proyecto {
   final String carreras;
   final String descripcion;
   final String periodo;
-  final String fechaSolicitud; // Considera usar DateTime si lo deseas
+  final String fechaSolicitud;
   final String tipoProyecto;
   final String apoyoEconomico;
   final String plazosEntrega;
@@ -13,6 +13,7 @@ class Proyecto {
   final String modalidad;
   final String estado;
   final int numeroEstudiantes;
+  
 
   Proyecto({
     required this.idProyecto,
@@ -32,21 +33,23 @@ class Proyecto {
   });
 
   factory Proyecto.fromMap(Map<String, dynamic> map) {
-    return Proyecto(
-      idProyecto: map['idProyecto'] as int,
-      idEmpresa: map['idEmpresa'] as int,
-      nombreProyecto: map['nombreProyecto'] ?? '',
-      carreras: map['carreras'] ?? '',
-      descripcion: map['descripcion'] ?? '',
-      periodo: map['periodo'] ?? '',
-      fechaSolicitud: map['fechaSolicitud'] ?? '',
-      tipoProyecto: map['tipoProyecto'] ?? '',
-      apoyoEconomico: map['apoyoEconomico'] ?? '',
-      plazosEntrega: map['plazosEntrega'] ?? '',
-      tecnologias: map['tecnologias'] ?? '',
-      modalidad: map['modalidad'] ?? '',
-      estado: map['estado'] ?? '',
-      numeroEstudiantes: map['numeroEstudiantes'] as int,
-    );
-  }
+  return Proyecto(
+    idProyecto: map['idProyecto'] != null ? map['idProyecto'] as int : 0,
+    idEmpresa: map['idempresa'] != null ? map['idempresa'] as int : 0,
+    nombreProyecto: map['nombreproyecto'] ?? '',
+    carreras: map['carreras'] ?? '',
+    descripcion: map['descripcion'] ?? '',
+    periodo: map['periodo'] ?? '',
+    fechaSolicitud: map['fechasolicitud'] ?? '',
+    tipoProyecto: map['tipoProyecto'] ?? '',
+    apoyoEconomico: map['apoyoeconomico'] ?? '',
+    plazosEntrega: map['plazosentrega'] ?? '',
+    tecnologias: map['tecnologias'] ?? '',
+    modalidad: map['modalidad'] ?? '',
+    estado: map['estado'] ?? '',
+    numeroEstudiantes: map['numeroestudiantes'] != null
+        ? map['numeroestudiantes'] as int
+        : 0,
+  );
+}
 }
