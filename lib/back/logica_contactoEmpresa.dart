@@ -1,7 +1,34 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:banco_de_proyectos/classes/contacto_empresa.dart';
 
 class ContactoService {
   static final _supabase = Supabase.instance.client;
+
+ static Future<ContactoEmpresa?> obtenerContacto(int idContacto) async {
+    try {
+      final response = await _supabase
+          .from('contactoempresa')
+          .select('''
+            *,
+            empresa:empresas(idempresa, nombre, descripcion) 
+          ''') 
+          .eq('idcontacto', idContacto)
+          .single(); // Espera un solo resultado
+
+      if (response != null && response.isNotEmpty) {
+        // Mapea el mapa de respuesta de Supabase a tu objeto ContactoEmpresa
+        return ContactoEmpresa.fromMap(response);
+      }
+      return null; // Si no se encuentra el contacto
+    } catch (e) {
+      print('❌ Error al obtener contacto por ID: $e');
+      // Puedes lanzar una excepción o retornar null dependiendo de cómo quieras manejar el error
+      return null;
+    }
+  }
+
+
+
 
   static Future<List<Map<String, dynamic>>> getEmpresas() async {
     try {

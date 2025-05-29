@@ -13,6 +13,7 @@ import 'package:banco_de_proyectos/classes/proyecto.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:banco_de_proyectos/classes/contacto_empresa.dart'; 
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,45 +55,56 @@ class MyApp extends StatelessWidget {
         '/form_empresa': (context) => FormularioEmpresa(),
         '/form_proyecto': (context) => FormularioProyecto(),
         '/form_contacto_empresa': (context) => FormularioContactoEmpresa(),
-        '/info_contacto_empresa': (context) => InfoContactoEmpresa(),
         '/vista_proyectos': (context) => ResumenProyectosPage(),
         '/vista_empresas': (context) => ResumenEmpresasPage(),
         '/vista_contacto_empresa': (context) => ResumenContactoEmpresaPage(),
         '/login': (context) => LoginPage(),
       },
       onGenerateRoute: (settings) {
+        final args = settings.arguments;
+
         if (settings.name == '/info_proyecto') {
-          final proyecto = settings.arguments as Proyecto;
-          return MaterialPageRoute(
-            builder: (context) => InfoProyecto(proyecto: proyecto),
-          );
+          if (args is Proyecto) {
+            return MaterialPageRoute(
+              builder: (context) => InfoProyecto(proyecto: args),
+            );
+          }
         }
 
         if (settings.name == '/info_empresa') {
-          final args = settings.arguments;
           if (args is int) {
             return MaterialPageRoute(
               builder: (context) => InfoEmpresa(idEmpresa: args),
             );
           } else {
-            return MaterialPageRoute(
-              builder: (_) => const Scaffold(
-                body: Center(
-                  child: Text('Error: ID de empresa no proporcionado o inválido.'),
-                ),
-              ),
-            );
+            return _errorRoute('ID de empresa no válido.');
           }
         }
 
-        return MaterialPageRoute(
-          builder: (_) => const Scaffold(
-            body: Center(child: Text('Ruta no encontrada')),
-          ),
-        );
+        if (settings.name == '/info_contacto_empresa') {
+          if (args is ContactoEmpresa) {
+            return MaterialPageRoute(
+              builder: (context) => InfoContactoEmpresa(contacto: args),
+            );
+          } else {
+            return _errorRoute('Objeto ContactoEmpresa no válido.');
+          }
+        }
+
+        return _errorRoute('Ruta no encontrada');
       },
       title: 'Material App',
       home: LoginPage(),
+    );
+  }
+
+  MaterialPageRoute _errorRoute(String mensaje) {
+    return MaterialPageRoute(
+      builder: (_) => Scaffold(
+        body: Center(
+          child: Text('Error: $mensaje'),
+        ),
+      ),
     );
   }
 }
