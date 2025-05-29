@@ -45,7 +45,10 @@ class InfoContactoEmpresa extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.arrow_back, color: Colors.white),
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        onPressed: () => Navigator.pop(context),
+                      ),
                       SizedBox(height: 20),
                       Text(
                         "Nombre del Empresario",
