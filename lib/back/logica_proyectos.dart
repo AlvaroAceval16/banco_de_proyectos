@@ -101,7 +101,7 @@ class ProyectoService {
     required String apoyoeconomico,
     required String? plazosentrega,
     required String tecnologias,
-    int? idempresa,
+    required int? idempresa,
     int numeroestudiantes = 1,
     String estado = 'Abierto',
   }) async {
@@ -128,7 +128,7 @@ class ProyectoService {
                 'apoyoeconomico': apoyoeconomico,
                 'plazosentrega': plazosentrega,
                 'tecnologias': tecnologias,
-                'idempresa': idempresa ?? 1,
+                'idempresa': idempresa,
                 'numeroestudiantes': numeroestudiantes,
                 'estado': estado,
                 'tipoproyecto': 'Desarrollo',
@@ -297,10 +297,26 @@ class ProyectoService {
                 DateTime.now().toIso8601String(), // Record deletion date
           })
           .eq('idproyecto', idProyecto);
-      print('Proyecto eliminado lógicamente exitosamente!');
+      print('Empresa eliminada lógicamente exitosamente!');
     } catch (e) {
-      print('Error al eliminar lógicamente el proyecto: $e');
-      throw Exception('Error al eliminar el proyecto: $e');
+      print('Error al eliminar lógicamente la empresa: $e');
+      throw Exception('Error al eliminar la empresa: $e');
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>>
+  obtenerEmpresasParaDropdown() async {
+    try {
+      final response = await _supabase
+          .from('empresas')
+          .select('idempresa, nombre') // Selecciona el ID y el nombre
+          .eq('activo', true) // Filtra solo las empresas activas
+          .order('nombre', ascending: true); // Ordena por nombre
+
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      print('❌ Error al obtener empresas para el dropdown: $e');
+      throw Exception('Error al cargar empresas para el dropdown: $e');
     }
   }
 
@@ -322,8 +338,6 @@ Future<void> eliminarProyectoinfoLogic(int idproyecto) async {
     }
   }
 
-
 }
-
 
 
