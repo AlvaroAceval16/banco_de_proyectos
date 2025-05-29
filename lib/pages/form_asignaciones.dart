@@ -1,20 +1,21 @@
 // lib/pages/form_asignaciones.dart
 import 'package:flutter/material.dart';
-import 'package:banco_de_proyectos/back/logica_asignaciones.dart';
-//import 'package:intl/intl.dart'; // Para formatear fechas
+import 'package:banco_de_proyectos/back/logica_asignaciones.dart'; // Importa tu servicio de asignaciones
 
-class FormAsignacionesPage extends StatefulWidget {
-  // Opcional: Si este formulario también se usa para editar, puedes pasar un ID de asignación
-  final int? idAsignacion;
+// No es necesario un `main` aquí si este formulario se usa como una ruta en tu MaterialApp principal.
+// final supabase = Supabase.instance.client; // No es necesario aquí, se usa en el servicio.
 
-  const FormAsignacionesPage({Key? key, this.idAsignacion}) : super(key: key);
+class FormAsignaciones extends StatefulWidget {
+  final int? idAsignacion; // Opcional: para modo edición
+
+  const FormAsignaciones({Key? key, this.idAsignacion}) : super(key: key);
 
   @override
-  State<FormAsignacionesPage> createState() => _FormAsignacionesPageState();
+  State<FormAsignaciones> createState() => _FormAsignacionesState();
 }
 
-class _FormAsignacionesPageState extends State<FormAsignacionesPage> {
-  final _formKey = GlobalKey<FormState>(); // Clave para el formulario
+class _FormAsignacionesState extends State<FormAsignaciones> {
+  final _formKey = GlobalKey<FormState>();
   final AsignacionService _asignacionService = AsignacionService();
 
   // Controladores para los campos de fecha
@@ -37,6 +38,16 @@ class _FormAsignacionesPageState extends State<FormAsignacionesPage> {
 
   bool _isLoading = true;
   String? _errorMessage;
+
+  // Estilo de decoración de input común, replicando tu ejemplo
+  final inputDecoration = InputDecoration(
+    filled: true,
+    fillColor: const Color(0xFFF3F3F3),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10.0),
+      borderSide: BorderSide.none,
+    ),
+  );
 
   @override
   void initState() {
@@ -69,22 +80,66 @@ class _FormAsignacionesPageState extends State<FormAsignacionesPage> {
           widget.idAsignacion!,
         );
         if (asignacionData != null) {
-          _selectedProyectoId = asignacionData['idProyecto'];
-          _selectedEstudianteId = asignacionData['idEstudiante'];
-          _selectedTutorId = asignacionData['idTutor'];
+          // --- Manejo para idProyecto ---
+          int? fetchedProyectoId = asignacionData['idproyecto'];
+          if (fetchedProyectoId != null &&
+              _proyectos.any((p) => p['idproyecto'] == fetchedProyectoId)) {
+            _selectedProyectoId = fetchedProyectoId;
+          } else if (fetchedProyectoId != null) {
+            // El proyecto asignado no está en la lista de proyectos activos
+            print(
+              'Advertencia: Proyecto ID $fetchedProyectoId de la asignación no encontrado en la lista de proyectos activos.',
+            );
+            _errorMessage =
+                (_errorMessage ?? '') +
+                '\nAdvertencia: El proyecto asignado no está disponible.';
+          } else {
+            // El idProyecto es null en la asignación, o no se encontró
+            _selectedProyectoId = null;
+          }
+
+          // --- Manejo para idEstudiante ---
+          int? fetchedEstudianteId = asignacionData['idestudiante'];
+          if (fetchedEstudianteId != null &&
+              _estudiantes.any(
+                (e) => e['idestudiante'] == fetchedEstudianteId,
+              )) {
+            _selectedEstudianteId = fetchedEstudianteId;
+          } else if (fetchedEstudianteId != null) {
+            // El estudiante asignado no está en la lista de estudiantes activos
+            print(
+              'Advertencia: Estudiante ID $fetchedEstudianteId de la asignación no encontrado en la lista de estudiantes activos.',
+            );
+            _errorMessage =
+                (_errorMessage ?? '') +
+                '\nAdvertencia: El estudiante asignado no está disponible.';
+          } else {
+            _selectedEstudianteId = null;
+          }
+
+          // --- Manejo para idTutor ---
+          int? fetchedTutorId = asignacionData['idtutor'];
+          if (fetchedTutorId != null &&
+              _tutores.any((t) => t['idtutor'] == fetchedTutorId)) {
+            _selectedTutorId = fetchedTutorId;
+          } else if (fetchedTutorId != null) {
+            // El tutor asignado no está en la lista de tutores activos
+            print(
+              'Advertencia: Tutor ID $fetchedTutorId de la asignación no encontrado en la lista de tutores activos.',
+            );
+            _errorMessage =
+                (_errorMessage ?? '') +
+                '\nAdvertencia: El tutor asignado no está disponible.';
+          } else {
+            _selectedTutorId = null;
+          }
+
+          // Otros campos (estado, fechas) no necesitan esta verificación de existencia en dropdown
           _selectedEstado = asignacionData['estado'];
           _fechaAsignacionController.text =
-              asignacionData['fechaAsignacion'] != null
-                  ? DateFormat(
-                    'yyyy-MM-dd',
-                  ).format(DateTime.parse(asignacionData['fechaAsignacion']))
-                  : '';
+              asignacionData['fechaasignacion'] ?? '';
           _fechaFinalizacionController.text =
-              asignacionData['fechaFinalizacion'] != null
-                  ? DateFormat(
-                    'yyyy-MM-dd',
-                  ).format(DateTime.parse(asignacionData['fechaFinalizacion']))
-                  : '';
+              asignacionData['fechafinalizacion'] ?? '';
         } else {
           _errorMessage = 'Asignación no encontrada para edición.';
         }
@@ -99,7 +154,7 @@ class _FormAsignacionesPageState extends State<FormAsignacionesPage> {
     }
   }
 
-  // Muestra un selector de fecha
+  // Muestra un selector de fecha y formatea la fecha a 'YYYY-MM-DD'
   Future<void> _selectDate(
     BuildContext context,
     TextEditingController controller,
@@ -112,7 +167,9 @@ class _FormAsignacionesPageState extends State<FormAsignacionesPage> {
     );
     if (picked != null) {
       setState(() {
-        controller.text = DateFormat('yyyy-MM-dd').format(picked);
+        // Formatear la fecha manualmente a 'YYYY-MM-DD'
+        controller.text =
+            "${picked.year.toString().padLeft(4, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
       });
     }
   }
@@ -135,27 +192,27 @@ class _FormAsignacionesPageState extends State<FormAsignacionesPage> {
             fechaAsignacion:
                 _fechaAsignacionController.text.isNotEmpty
                     ? _fechaAsignacionController.text
-                    : null,
+                    : null, // Si está vacío, la DB usará el DEFAULT
             fechaFinalizacion:
                 _fechaFinalizacionController.text.isNotEmpty
                     ? _fechaFinalizacionController.text
                     : null,
           );
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Asignación creada exitosamente!')),
+            const SnackBar(content: Text('✅ Asignación creada exitosamente!')),
           );
         } else {
           // Modo edición
           final Map<String, dynamic> updates = {
-            'idProyecto': _selectedProyectoId,
-            'idEstudiante': _selectedEstudianteId,
-            'idTutor': _selectedTutorId,
+            'idproyecto': _selectedProyectoId,
+            'idestudiante': _selectedEstudianteId,
+            'idtutor': _selectedTutorId,
             'estado': _selectedEstado,
-            'fechaAsignacion':
+            'fechaasignacion':
                 _fechaAsignacionController.text.isNotEmpty
                     ? _fechaAsignacionController.text
                     : null,
-            'fechaFinalizacion':
+            'fechafinalizacion':
                 _fechaFinalizacionController.text.isNotEmpty
                     ? _fechaFinalizacionController.text
                     : null,
@@ -166,7 +223,7 @@ class _FormAsignacionesPageState extends State<FormAsignacionesPage> {
           );
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Asignación actualizada exitosamente!'),
+              content: Text('✅ Asignación actualizada exitosamente!'),
             ),
           );
         }
@@ -177,7 +234,7 @@ class _FormAsignacionesPageState extends State<FormAsignacionesPage> {
         });
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+        ).showSnackBar(SnackBar(content: Text('❌ Error: ${e.toString()}')));
       } finally {
         setState(() {
           _isLoading = false;
@@ -186,17 +243,182 @@ class _FormAsignacionesPageState extends State<FormAsignacionesPage> {
     }
   }
 
+  // --- Widgets Auxiliares ---
+
+  Widget _seccion(String titulo) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          titulo,
+          style: const TextStyle(
+            fontSize: 23,
+            fontFamily: 'Poppins',
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 10),
+      ],
+    );
+  }
+
+  Widget _campoTexto(
+    String label,
+    String hint,
+    TextEditingController controller, {
+    TextInputType keyboardType = TextInputType.text,
+    int maxLines = 1,
+    bool readOnly = false, // Nuevo parámetro para campos de solo lectura
+    VoidCallback? onTap, // Nuevo parámetro para el onTap del campo
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontFamily: 'Poppins',
+              fontWeight: FontWeight.w500,
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextFormField(
+            controller: controller,
+            keyboardType: keyboardType,
+            maxLines: maxLines,
+            readOnly: readOnly, // Aplica el modo de solo lectura
+            onTap: onTap, // Aplica el onTap
+            decoration: inputDecoration.copyWith(hintText: hint),
+            validator:
+                (value) =>
+                    value == null || value.isEmpty ? 'Campo obligatorio' : null,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // _comboBox para String
+  Widget _comboBoxString(
+    String label,
+    String hint,
+    String? value,
+    List<String> items,
+    Function(String?) onChanged,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontFamily: 'Poppins',
+              fontWeight: FontWeight.w500,
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<String>(
+            decoration: inputDecoration,
+            value: value,
+            hint: Text(hint),
+            items:
+                items.map((String item) {
+                  return DropdownMenuItem<String>(
+                    value: item,
+                    child: Text(item),
+                  );
+                }).toList(),
+            onChanged: onChanged,
+            validator:
+                (value) => value == null ? 'Seleccione una opción' : null,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Nuevo _comboBox para int (para IDs de Proyecto, Estudiante, Tutor)
+  Widget _comboBoxInt({
+    required String label,
+    required String hint,
+    required int? value,
+    required List<Map<String, dynamic>> items,
+    required String
+    idKey, // Clave para el ID en el mapa (ej. 'idproyecto', 'idEstudiante')
+    required String
+    displayKey, // Clave para el texto a mostrar (ej. 'nombreproyecto', 'nombreDisplay')
+    required Function(int?) onChanged,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontFamily: 'Poppins',
+              fontWeight: FontWeight.w500,
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<int>(
+            decoration: inputDecoration,
+            value: value,
+            hint: Text(hint),
+            items:
+                items.map((Map<String, dynamic> item) {
+                  return DropdownMenuItem<int>(
+                    value: item[idKey],
+                    child: Text(
+                      item[displayKey]?.toString() ?? 'Error de dato',
+                    ),
+                  );
+                }).toList(),
+            onChanged: onChanged,
+            validator:
+                (value) => value == null ? 'Seleccione una opción' : null,
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text(
-          widget.idAsignacion == null
-              ? 'Nueva Asignación'
-              : 'Editar Asignación',
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.black),
+              onPressed: () => Navigator.pop(context),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              widget.idAsignacion == null
+                  ? "Nueva Asignación"
+                  : "Editar Asignación",
+              style: const TextStyle(
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.w600,
+                fontSize: 24,
+                color: Colors.black,
+              ),
+            ),
+          ],
         ),
-        backgroundColor: const Color(0xFF052659),
-        foregroundColor: Colors.white,
       ),
       body:
           _isLoading
@@ -208,182 +430,105 @@ class _FormAsignacionesPageState extends State<FormAsignacionesPage> {
                   style: const TextStyle(color: Colors.red),
                 ),
               )
-              : Padding(
-                padding: const EdgeInsets.all(16.0),
+              : SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
                 child: Form(
                   key: _formKey,
-                  child: ListView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Dropdown para Proyecto
-                      DropdownButtonFormField<int>(
+                      _seccion("Detalles de la Asignación"),
+                      _comboBoxInt(
+                        label: "Proyecto",
+                        hint: "Seleccionar Proyecto",
                         value: _selectedProyectoId,
-                        decoration: const InputDecoration(
-                          labelText: 'Proyecto',
-                          border: OutlineInputBorder(),
-                        ),
-                        items:
-                            _proyectos.map((proyecto) {
-                              return DropdownMenuItem<int>(
-                                value: proyecto['idproyecto'],
-                                child: Text(
-                                  proyecto['nombreproyecto'] ?? 'Sin nombre',
-                                ),
-                              );
-                            }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedProyectoId = value;
-                          });
+                        items: _proyectos,
+                        idKey: 'idproyecto',
+                        displayKey: 'nombreproyecto',
+                        onChanged: (val) {
+                          setState(() => _selectedProyectoId = val);
                         },
-                        validator:
-                            (value) =>
-                                value == null ? 'Selecciona un proyecto' : null,
                       ),
-                      const SizedBox(height: 16),
-
-                      // Dropdown para Estudiante
-                      DropdownButtonFormField<int>(
+                      _comboBoxInt(
+                        label: "Estudiante",
+                        hint: "Seleccionar Estudiante",
                         value: _selectedEstudianteId,
-                        decoration: const InputDecoration(
-                          labelText: 'Estudiante',
-                          border: OutlineInputBorder(),
-                        ),
-                        items:
-                            _estudiantes.map((estudiante) {
-                              return DropdownMenuItem<int>(
-                                value: estudiante['id'],
-                                child: Text(
-                                  estudiante['nombreDisplay'] ?? 'Sin nombre',
-                                ),
-                              );
-                            }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedEstudianteId = value;
-                          });
+                        items: _estudiantes,
+                        idKey:
+                            'idestudiante', // Usamos 'id' como clave para el ID del estudiante
+                        displayKey:
+                            'nombre', // Usamos 'nombreDisplay' para el texto
+                        onChanged: (val) {
+                          setState(() => _selectedEstudianteId = val);
                         },
-                        validator:
-                            (value) =>
-                                value == null
-                                    ? 'Selecciona un estudiante'
-                                    : null,
                       ),
-                      const SizedBox(height: 16),
-
-                      // Dropdown para Tutor
-                      DropdownButtonFormField<int>(
+                      _comboBoxInt(
+                        label: "Tutor",
+                        hint: "Seleccionar Tutor",
                         value: _selectedTutorId,
-                        decoration: const InputDecoration(
-                          labelText: 'Tutor',
-                          border: OutlineInputBorder(),
-                        ),
-                        items:
-                            _tutores.map((tutor) {
-                              return DropdownMenuItem<int>(
-                                value: tutor['id'],
-                                child: Text(
-                                  tutor['nombreDisplay'] ?? 'Sin nombre',
-                                ),
-                              );
-                            }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedTutorId = value;
-                          });
-                        },
-                        validator:
-                            (value) =>
-                                value == null ? 'Selecciona un tutor' : null,
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Campo de fecha de asignación
-                      TextFormField(
-                        controller: _fechaAsignacionController,
-                        decoration: InputDecoration(
-                          labelText: 'Fecha de Asignación',
-                          border: const OutlineInputBorder(),
-                          suffixIcon: IconButton(
-                            icon: const Icon(Icons.calendar_today),
-                            onPressed:
-                                () => _selectDate(
-                                  context,
-                                  _fechaAsignacionController,
-                                ),
-                          ),
-                        ),
-                        readOnly:
-                            true, // Para que el usuario no pueda escribir directamente
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            // Si la DB tiene DEFAULT CURRENT_DATE, este campo podría no ser requerido en la UI
-                            // Pero si quieres que el usuario lo seleccione, déjalo así.
-                            return 'Selecciona una fecha de asignación';
-                          }
-                          return null;
+                        items: _tutores,
+                        idKey:
+                            'idtutor', // Usamos 'id' como clave para el ID del tutor
+                        displayKey:
+                            'nombre', // Usamos 'nombreDisplay' para el texto
+                        onChanged: (val) {
+                          setState(() => _selectedTutorId = val);
                         },
                       ),
-                      const SizedBox(height: 16),
-
-                      // Campo de fecha de finalización (opcional)
-                      TextFormField(
-                        controller: _fechaFinalizacionController,
-                        decoration: InputDecoration(
-                          labelText: 'Fecha de Finalización (Opcional)',
-                          border: const OutlineInputBorder(),
-                          suffixIcon: IconButton(
-                            icon: const Icon(Icons.calendar_today),
-                            onPressed:
-                                () => _selectDate(
-                                  context,
-                                  _fechaFinalizacionController,
-                                ),
-                          ),
-                        ),
+                      _campoTexto(
+                        "Fecha de Asignación",
+                        "YYYY-MM-DD",
+                        _fechaAsignacionController,
                         readOnly: true,
+                        onTap:
+                            () => _selectDate(
+                              context,
+                              _fechaAsignacionController,
+                            ),
                       ),
-                      const SizedBox(height: 16),
-
-                      // Dropdown para Estado
-                      DropdownButtonFormField<String>(
-                        value: _selectedEstado,
-                        decoration: const InputDecoration(
-                          labelText: 'Estado',
-                          border: OutlineInputBorder(),
-                        ),
-                        items:
-                            _estados.map((estado) {
-                              return DropdownMenuItem<String>(
-                                value: estado,
-                                child: Text(estado),
-                              );
-                            }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedEstado = value;
-                          });
+                      _campoTexto(
+                        "Fecha de Finalización (Opcional)",
+                        "YYYY-MM-DD",
+                        _fechaFinalizacionController,
+                        readOnly: true,
+                        onTap:
+                            () => _selectDate(
+                              context,
+                              _fechaFinalizacionController,
+                            ),
+                      ),
+                      _comboBoxString(
+                        "Estado",
+                        "Seleccionar Estado",
+                        _selectedEstado,
+                        _estados,
+                        (val) {
+                          setState(() => _selectedEstado = val);
                         },
-                        validator:
-                            (value) =>
-                                value == null ? 'Selecciona un estado' : null,
                       ),
-                      const SizedBox(height: 24),
-
-                      ElevatedButton(
-                        onPressed: _submitForm,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF5285E8),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 15),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _submitForm,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF4A90E2),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 15),
                           ),
-                        ),
-                        child: Text(
-                          widget.idAsignacion == null
-                              ? 'Guardar Asignación'
-                              : 'Actualizar Asignación',
-                          style: const TextStyle(fontSize: 18),
+                          child: Text(
+                            widget.idAsignacion == null
+                                ? "Guardar Asignación"
+                                : "Actualizar Asignación",
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontFamily: 'Poppins',
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
                       ),
                     ],
