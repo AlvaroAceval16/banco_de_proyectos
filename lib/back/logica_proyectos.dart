@@ -313,51 +313,49 @@ class ProyectoService {
     List<String>? filtrosEstado,
     List<String>? filtrosModalidad,
     List<String>? filtrosPeriodo,
-    String? searchTerm,
-    String orderByColumn = 'fechasolicitud', // Por defecto
-    bool ascending = false, // Por defecto
+    String searchTerm = '',
+    String orderByColumn = 'fechasolicitud',
+    bool ascending = false,
   }) async {
-    try {
-      // Inicia la consulta
-      var query = _supabase.from('proyectos').select('*');
+    final supabase = Supabase.instance.client;
 
-      // Aplica el filtro 'activo = true' por defecto
-      query = query.eq('activo', true);
+    dynamic query = supabase
+        .from('proyectos')
+        .select()
+        .eq('activo', true);
 
-      // Aplicar filtros de estado
-      if (filtrosEstado != null && filtrosEstado.isNotEmpty) {
-        query = query.filter('estado', 'in', '(${filtrosEstado.map((e) => "'$e'").join(',')})');
-      }
-
-      // Aplicar filtros de modalidad
-      if (filtrosModalidad != null && filtrosModalidad.isNotEmpty) {
-        query = query.filter('modalidad', 'in', '(${filtrosModalidad.map((e) => "'$e'").join(',')})');
-      }
-
-      // Aplicar filtros de periodo
-      if (filtrosPeriodo != null && filtrosPeriodo.isNotEmpty) {
-        query = query.filter('periodo', 'in', '(${filtrosPeriodo.map((e) => "'$e'").join(',')})');
-      }
-
-      // Aplicar término de búsqueda
-      if (searchTerm != null && searchTerm.isNotEmpty) {
-        // Encadena la condición .or() directamente al query
-        query = query.or('nombreproyecto.ilike.%$searchTerm%,descripcion.ilike.%$searchTerm%');
-      }
-
-      // Aplicar ordenamiento. El método .order() devuelve un PostgrestTransformBuilder,
-      // por eso el encadenamiento directo es crucial para evitar el error de asignación.
-      final List<Map<String, dynamic>> response = await query.order(orderByColumn, ascending: ascending);
-
-      if (response.isEmpty) {
-        return [];
-      }
-
-      // Mapea los resultados a objetos Proyecto
-      return response.map((json) => Proyecto.fromMap(json)).toList();
-    } catch (e) {
-      print('Error al obtener proyectos con filtros: $e');
-      throw Exception('Error al cargar proyectos con filtros: $e');
+    if (filtrosEstado != null && filtrosEstado.isNotEmpty) {
+      query = query.inFilter('estado', filtrosEstado);
     }
+
+    if (filtrosModalidad != null && filtrosModalidad.isNotEmpty) {
+      query = query.inFilter('modalidad', filtrosModalidad);
+    }
+
+    if (filtrosPeriodo != null && filtrosPeriodo.isNotEmpty) {
+      query = query.inFilter('periodo', filtrosPeriodo);
+    }
+
+    query = query.order(orderByColumn, ascending: ascending);
+
+    final response = await query;
+    final data = List<Map<String, dynamic>>.from(response);
+
+    List<Map<String, dynamic>> filteredData;
+
+    if (searchTerm.trim().isEmpty) {
+      filteredData = data;
+    } else {
+      final queryLower = searchTerm.toLowerCase();
+      filteredData = data.where((proyecto) {
+        final nombre = (proyecto['nombreproyecto'] ?? '').toString().toLowerCase();
+        final descripcion = (proyecto['descripcion'] ?? '').toString().toLowerCase();
+        return nombre.contains(queryLower) || descripcion.contains(queryLower);
+      }).toList();
+    }
+
+    // Convertir cada Map a Proyecto
+    return filteredData.map((map) => Proyecto.fromMap(map)).toList();
   }
+
 }

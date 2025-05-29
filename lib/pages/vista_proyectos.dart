@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'info_proyecto.dart';
 import 'package:banco_de_proyectos/back/logica_proyectos.dart';
+import 'package:banco_de_proyectos/back/busquedas_proyectos.dart';
 import 'package:banco_de_proyectos/classes/proyecto.dart';
 
 class ResumenProyectosPage extends StatefulWidget {
@@ -13,17 +14,15 @@ class ResumenProyectosPage extends StatefulWidget {
 class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
   late Future<List<Proyecto>> _obtenerProyectosFuture;
 
-  // Los filtros iniciales deben estar todos en 'true' para que el usuario pueda desactivarlos
-  // Pero la carga INICIAL no usa estos filtros hasta que se presiona "Aplicar"
   final Map<String, bool> filtros = {
-    'Activo': true,
-    'En Proceso': true,
-    'Finalizado': true,
-    'Presencial': true,
-    'En Línea': true,
-    'Híbrido': true,
-    'Ene-Jun': true,
-    'Ago-Dic': true,
+    'Activo': false,
+    'En Proceso': false,
+    'Finalizado': false,
+    'Presencial': false,
+    'En Línea': false,
+    'Híbrido': false,
+    'Ene-Jun': false,
+    'Ago-Dic': false,
   };
 
   final TextEditingController _searchController = TextEditingController();
@@ -31,77 +30,42 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
   @override
   void initState() {
     super.initState();
-    // Al iniciar, cargamos *todos* los proyectos visibles.
-    // Esto significa que los filtros de estado/modalidad/periodo se envían como null o vacíos.
-    _obtenerProyectosFuture = ProyectoService.obtenerProyectosConFiltros(
-      searchTerm: _searchController.text.trim().isNotEmpty ? _searchController.text.trim() : null,
-      // No se pasan filtros de estado, modalidad o periodo inicialmente
-      // para que el backend no los aplique.
-      filtrosEstado: null,
-      filtrosModalidad: null,
-      filtrosPeriodo: null,
-    );
-    // No necesitamos un listener para _onSearchChanged si solo aplicamos en onSubmitted o con el botón
-    // _searchController.addListener(_onSearchChanged);
+    _actualizarFiltrosYBusqueda();
   }
 
-  @override
-  void dispose() {
-    // Si no usas _onSearchChanged, puedes quitar el removeListener
-    // _searchController.removeListener(_onSearchChanged);
-    _searchController.dispose();
-    super.dispose();
-  }
+  void _actualizarFiltrosYBusqueda() {
+    String filtroTexto = _searchController.text.trim();
 
-  // Este método ahora se encarga de aplicar los filtros *solo cuando se le llama explícitamente*
-  void _applyFilters() {
+    List<String> estadosActivos = [];
+    if (filtros['Activo']!) estadosActivos.add('Activo');
+    if (filtros['En Proceso']!) estadosActivos.add('En Proceso');
+    if (filtros['Finalizado']!) estadosActivos.add('Finalizado');
+
+    List<String> modalidadesActivas = [];
+    if (filtros['Presencial']!) modalidadesActivas.add('Presencial');
+    if (filtros['En Línea']!) modalidadesActivas.add('En Línea');
+    if (filtros['Híbrido']!) modalidadesActivas.add('Híbrido');
+
+    List<String> periodosActivos = [];
+    if (filtros['Ene-Jun']!) periodosActivos.add('Ene-Jun');
+    if (filtros['Ago-Dic']!) periodosActivos.add('Ago-Dic');
+
     setState(() {
-      List<String> estadosActivos = [];
-      if (filtros['Activo']!) estadosActivos.add('Activo');
-      if (filtros['En Proceso']!) estadosActivos.add('En Proceso');
-      if (filtros['Finalizado']!) estadosActivos.add('Finalizado');
-
-      List<String> modalidadesActivas = [];
-      if (filtros['Presencial']!) modalidadesActivas.add('Presencial');
-      if (filtros['En Línea']!) modalidadesActivas.add('En Línea');
-      if (filtros['Híbrido']!) modalidadesActivas.add('Híbrido');
-
-      List<String> periodosActivos = [];
-      if (filtros['Ene-Jun']!) periodosActivos.add('Ene-Jun');
-      if (filtros['Ago-Dic']!) periodosActivos.add('Ago-Dic');
-
-      String searchTerm = _searchController.text.trim();
-
-      print('--- Aplicando Filtros ---');
-      print('Filtros Estado: $estadosActivos');
-      print('Filtros Modalidad: $modalidadesActivas');
-      print('Filtros Periodo: $periodosActivos');
-      print('Término de Búsqueda: "$searchTerm"');
-      print('-------------------------');
-
-      _obtenerProyectosFuture = ProyectoService.obtenerProyectosConFiltros(
-        filtrosEstado: estadosActivos.isNotEmpty ? estadosActivos : null,
-        filtrosModalidad: modalidadesActivas.isNotEmpty ? modalidadesActivas : null,
-        filtrosPeriodo: periodosActivos.isNotEmpty ? periodosActivos : null,
-        searchTerm: searchTerm.isNotEmpty ? searchTerm : null,
+      _obtenerProyectosFuture = ContactoServiceProyecto.obtenerProyectosConFiltros(
+        filtro: filtroTexto,
+        estados: estadosActivos.isEmpty ? null : estadosActivos,
+        modalidades: modalidadesActivas.isEmpty ? null : modalidadesActivas,
+        periodos: periodosActivos.isEmpty ? null : periodosActivos,
       );
     });
   }
 
-  // Restablece todos los filtros en el UI y recarga los proyectos sin filtros
   void _resetFilters() {
     setState(() {
-      filtros.updateAll((key, value) => true); // Activa todos los switches en el UI
-      _searchController.clear(); // Limpia el campo de búsqueda
-      // Recarga los proyectos sin aplicar ningún filtro específico, solo el activo=true por defecto
-      _obtenerProyectosFuture = ProyectoService.obtenerProyectosConFiltros(
-        filtrosEstado: null,
-        filtrosModalidad: null,
-        filtrosPeriodo: null,
-        searchTerm: null,
-      );
+      filtros.updateAll((key, value) => true);
+      _searchController.clear();
+      _actualizarFiltrosYBusqueda();
     });
-    Navigator.pop(context); // Cierra el Drawer
   }
 
   @override
@@ -137,11 +101,31 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
                   _buildSwitchTile('Híbrido'),
                   const SizedBox(height: 8),
                   _buildSectionTitle('Periodo'),
-                  const Text('2025'), // Esto es un texto fijo, no un filtro
+                  const Text('2025'),
                   _buildSwitchTile('Ene-Jun'),
                   _buildSwitchTile('Ago-Dic'),
                   const Spacer(),
-                  _buildDrawerButtons(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          _actualizarFiltrosYBusqueda();
+                          Navigator.pop(context);
+                        },
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                        child: const Text('Aplicar'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          _resetFilters();
+                          Navigator.pop(context);
+                        },
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+                        child: const Text('Restablecer'),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -176,19 +160,17 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
                     } else if (snapshot.hasError) {
-                      print('Error en FutureBuilder: ${snapshot.error}'); // Depuración
                       return Center(child: Text('Error al cargar proyectos: ${snapshot.error}'));
                     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                       return const Center(child: Text('No hay proyectos disponibles con los filtros aplicados.'));
                     }
 
-                    final proyectos = snapshot.data!;
+                    final proyectos = snapshot.data!; // Aquí ya es List<Proyecto>
                     return ListView.builder(
                       itemCount: proyectos.length,
                       itemBuilder: (context, index) {
                         final proyecto = proyectos[index];
                         return Card(
-                          color: Theme.of(context).cardColor,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -196,7 +178,7 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
                           margin: const EdgeInsets.only(bottom: 12),
                           child: ListTile(
                             title: Text(
-                              proyecto.nombreProyecto,
+                              proyecto.nombreProyecto, // usa propiedades del objeto Proyecto
                               style: const TextStyle(
                                 fontFamily: 'Poppins',
                                 fontWeight: FontWeight.w500,
@@ -240,10 +222,7 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
       children: [
         const Text(
           'Filtros',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -270,36 +249,10 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
       onChanged: (val) {
         setState(() {
           filtros[label] = val;
+          _actualizarFiltrosYBusqueda();
         });
       },
       activeColor: Colors.green,
-    );
-  }
-
-  Widget _buildDrawerButtons() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        ElevatedButton(
-          onPressed: () {
-            _applyFilters(); // <--- Llama al nuevo método para aplicar filtros
-            Navigator.pop(context); // Cierra el Drawer
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue,
-        ),
-          child: const Text('Aplicar'),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            _resetFilters(); // Llama al método para restablecer filtros
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.grey.shade400,
-          ),
-          child: const Text('Restablecer'),
-        ),
-      ],
     );
   }
 
@@ -316,8 +269,11 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
           borderSide: BorderSide.none,
         ),
       ),
+      onChanged: (value) {
+        _actualizarFiltrosYBusqueda();
+      },
       onSubmitted: (value) {
-        _applyFilters(); // <--- Llama a _applyFilters al presionar Enter en el campo de búsqueda
+        _actualizarFiltrosYBusqueda();
       },
     );
   }
