@@ -1,27 +1,56 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:banco_de_proyectos/classes/proyecto.dart';
 
-class InfoProyecto extends StatelessWidget {
+class InfoProyecto extends StatefulWidget {
   final Proyecto proyecto;
 
   const InfoProyecto({Key? key, required this.proyecto}) : super(key: key);
 
   @override
+  State<InfoProyecto> createState() => _InfoProyectoState();
+}
+
+class _InfoProyectoState extends State<InfoProyecto> {
+  late Future<Map<String, String>> empresaInfo;
+
+  @override
+  void initState() {
+    super.initState();
+    empresaInfo = obtenerEmpresa(widget.proyecto.idEmpresa);
+  }
+
+  Future<Map<String, String>> obtenerEmpresa(int idEmpresa) async {
+    final response = await Supabase.instance.client
+        .from('empresas')
+        .select('nombre, descripcion')
+        .eq('idempresa', idEmpresa)
+        .single();
+
+    return {
+      'nombre': response['nombre'] ?? 'Desconocido',
+      'descripcion': response['descripcion'] ?? 'Sin descripción',
+    };
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final proyecto = widget.proyecto;
+
     return Scaffold(
-      backgroundColor: Color(0xFF052659),
+      backgroundColor: const Color(0xFF052659),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // Acción para editar
         },
-        backgroundColor: Color(0xFF5285E8),
-        child: Icon(Icons.edit, color: Colors.white),
+        backgroundColor: const Color(0xFF5285E8),
+        child: const Icon(Icons.edit, color: Colors.white),
       ),
       appBar: AppBar(
-        backgroundColor: Color(0xFF052659),
+        backgroundColor: const Color(0xFF052659),
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -31,36 +60,36 @@ class InfoProyecto extends StatelessWidget {
             child: ListView(
               children: [
                 Container(
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: Color(0xFF052659),
                     borderRadius: BorderRadius.vertical(
                       bottom: Radius.circular(20),
                     ),
                   ),
-                  padding: EdgeInsets.only(bottom: 30, left: 20, right: 20),
+                  padding: const EdgeInsets.only(bottom: 30, left: 20, right: 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       Text(
-                        proyecto.titulo,
-                        style: TextStyle(
+                        proyecto.nombreProyecto,
+                        style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                           fontFamily: 'Poppins',
                           color: Colors.white,
                         ),
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       Text(
                         proyecto.descripcion,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 14,
                           color: Colors.white70,
                           fontFamily: 'Poppins',
                         ),
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -76,8 +105,8 @@ class InfoProyecto extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 25),
-                  decoration: BoxDecoration(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
+                  decoration: const BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
                   ),
@@ -94,8 +123,8 @@ class InfoProyecto extends StatelessWidget {
                           ),
                         ),
                       ),
-                      SizedBox(height: 20),
-                      Text(
+                      const SizedBox(height: 20),
+                      const Text(
                         "Información Adicional",
                         style: TextStyle(
                           fontSize: 20,
@@ -103,32 +132,44 @@ class InfoProyecto extends StatelessWidget {
                           fontFamily: 'Poppins',
                         ),
                       ),
-                      SizedBox(height: 25),
-                      InfoCard(
-                        label: "Empresa",
-                        title: proyecto.idEmpresa,
-                        subtitle: proyecto.descripcionEmpresa,
-                        icon: Icons.business,
+                      const SizedBox(height: 25),
+                      FutureBuilder<Map<String, String>>(
+                        future: empresaInfo,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const Center(child: CircularProgressIndicator());
+                          } else if (snapshot.hasError) {
+                            return const Text("Error al cargar la empresa");
+                          } else {
+                            final empresa = snapshot.data!;
+                            return InfoCard(
+                              label: "Empresa",
+                              title: empresa['nombre']!,
+                              subtitle: empresa['descripcion']!,
+                              icon: Icons.business,
+                            );
+                          }
+                        },
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       InfoCard(
                         label: "Tecnologías utilizadas",
                         title: "Tecnologías utilizadas",
                         subtitle: proyecto.tecnologias,
                         icon: Icons.code,
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       InfoCard(
                         label: "Residente",
-                        title: proyecto.residente,
-                        subtitle: "Número de control: ${proyecto.noControlResidente}",
+                        title: "No disponible",
+                        subtitle: "Número de control: N/A",
                         icon: Icons.person,
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       InfoCard(
                         label: "Asesor",
-                        title: proyecto.asesor,
-                        subtitle: "Número de control: ${proyecto.noControlAsesor}",
+                        title: "No disponible",
+                        subtitle: "Número de control: N/A",
                         icon: Icons.school,
                       ),
                     ],
@@ -147,11 +188,11 @@ class InfoProyecto extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         children: [
-          Container(
+          SizedBox(
             width: 150,
             child: Text(
               label,
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.white70,
                 fontFamily: 'Poppins',
                 fontWeight: FontWeight.w500,
@@ -161,7 +202,7 @@ class InfoProyecto extends StatelessWidget {
           Expanded(
             child: Text(
               value,
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
@@ -195,15 +236,15 @@ class InfoCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontSize: 14, fontFamily: 'Poppins', fontWeight: FontWeight.w500)),
-        SizedBox(height: 8),
+        Text(label, style: const TextStyle(fontSize: 14, fontFamily: 'Poppins', fontWeight: FontWeight.w500)),
+        const SizedBox(height: 8),
         Card(
           elevation: 0,
           color: Theme.of(context).cardColor,
           child: ListTile(
             title: Text(
               title,
-              style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w500),
+              style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w500),
             ),
             subtitle: Text(
               subtitle,
