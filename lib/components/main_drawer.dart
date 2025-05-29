@@ -38,7 +38,7 @@ class MainDrawer extends StatelessWidget {
             onTap: () {
               Navigator.pop(context); // Cierra el Drawer primero
               Future.delayed(const Duration(milliseconds: 200), () {
-              Navigator.pushNamed(context, '/vista_proyectos');
+                Navigator.pushNamed(context, '/vista_proyectos');
               });
             },
           ),
@@ -48,7 +48,7 @@ class MainDrawer extends StatelessWidget {
             onTap: () {
               Navigator.pop(context); // Cierra el Drawer primero
               Future.delayed(const Duration(milliseconds: 200), () {
-              Navigator.pushNamed(context, '/vista_empresas');
+                Navigator.pushNamed(context, '/vista_empresas');
               });
             },
           ),
@@ -58,7 +58,17 @@ class MainDrawer extends StatelessWidget {
             onTap: () {
               Navigator.pop(context); // Cierra el Drawer primero
               Future.delayed(const Duration(milliseconds: 200), () {
-              Navigator.pushNamed(context, '/vista_contacto_empresa');
+                Navigator.pushNamed(context, '/vista_contacto_empresa');
+              });
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.assignment_outlined),
+            title: Text('Asignaciones'),
+            onTap: () {
+              Navigator.pop(context); // Cierra el Drawer primero
+              Future.delayed(const Duration(milliseconds: 200), () {
+                Navigator.pushNamed(context, '/form_asignaciones');
               });
             },
           ),

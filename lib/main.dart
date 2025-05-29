@@ -13,7 +13,8 @@ import 'package:banco_de_proyectos/classes/proyecto.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:banco_de_proyectos/classes/contacto_empresa.dart'; 
+import 'package:banco_de_proyectos/classes/contacto_empresa.dart';
+import 'package:banco_de_proyectos/pages/form_asignaciones.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -59,6 +60,7 @@ class MyApp extends StatelessWidget {
         '/vista_empresas': (context) => ResumenEmpresasPage(),
         '/vista_contacto_empresa': (context) => ResumenContactoEmpresaPage(),
         '/login': (context) => LoginPage(),
+        '/form_asignaciones': (context) => FormAsignaciones(),
       },
       onGenerateRoute: (settings) {
         final args = settings.arguments;
@@ -81,7 +83,7 @@ class MyApp extends StatelessWidget {
           }
         }
 
-        if (settings.name == '/info_contacto_empresa') {
+        if (settings.name == '/info_contacto-empresa') {
           if (args is ContactoEmpresa) {
             return MaterialPageRoute(
               builder: (context) => InfoContactoEmpresa(contacto: args),
@@ -90,7 +92,6 @@ class MyApp extends StatelessWidget {
             return _errorRoute('Objeto ContactoEmpresa no válido.');
           }
         }
-
         return _errorRoute('Ruta no encontrada');
       },
       title: 'Material App',
@@ -100,11 +101,7 @@ class MyApp extends StatelessWidget {
 
   MaterialPageRoute _errorRoute(String mensaje) {
     return MaterialPageRoute(
-      builder: (_) => Scaffold(
-        body: Center(
-          child: Text('Error: $mensaje'),
-        ),
-      ),
+      builder: (_) => Scaffold(body: Center(child: Text('Error: $mensaje'))),
     );
   }
 }

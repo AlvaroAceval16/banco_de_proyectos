@@ -4,16 +4,17 @@ import 'package:banco_de_proyectos/classes/contacto_empresa.dart';
 class ContactoService {
   static final _supabase = Supabase.instance.client;
 
- static Future<ContactoEmpresa?> obtenerContacto(int idContacto) async {
+  static Future<ContactoEmpresa?> obtenerContacto(int idContacto) async {
     try {
-      final response = await _supabase
-          .from('contactoempresa')
-          .select('''
+      final response =
+          await _supabase
+              .from('contactoempresa')
+              .select('''
             *,
             empresa:empresas(idempresa, nombre, descripcion) 
-          ''') 
-          .eq('idcontacto', idContacto)
-          .single(); // Espera un solo resultado
+          ''')
+              .eq('idcontacto', idContacto)
+              .single(); // Espera un solo resultado
 
       if (response != null && response.isNotEmpty) {
         // Mapea el mapa de respuesta de Supabase a tu objeto ContactoEmpresa
@@ -27,14 +28,12 @@ class ContactoService {
     }
   }
 
-
-
-
   static Future<List<Map<String, dynamic>>> getEmpresas() async {
     try {
       final response = await _supabase
           .from('empresas')
           .select('*')
+          .eq('activo', true) // Filtra solo empresas activas
           .order('nombre', ascending: true);
 
       return List<Map<String, dynamic>>.from(response);
@@ -48,6 +47,7 @@ class ContactoService {
       final response = await _supabase
           .from('contactoempresa')
           .select('*')
+          .eq('activo', true) // Filtra solo contactos activos
           .order('nombre', ascending: true);
 
       return List<Map<String, dynamic>>.from(response);
@@ -56,7 +56,9 @@ class ContactoService {
     }
   }
 
-  static Future<List<Map<String, dynamic>>> getContactosByEmpresa(int idEmpresa) async {
+  static Future<List<Map<String, dynamic>>> getContactosByEmpresa(
+    int idEmpresa,
+  ) async {
     try {
       final response = await _supabase
           .from('contactoempresa')
@@ -72,9 +74,10 @@ class ContactoService {
 
   static Future<Map<String, dynamic>?> getContactoById(int idContacto) async {
     try {
-      final response = await _supabase
-          .from('contactoempresa')
-          .select('''
+      final response =
+          await _supabase
+              .from('contactoempresa')
+              .select('''
             idcontacto,
             nombre,
             apellidopaterno,
@@ -90,8 +93,8 @@ class ContactoService {
               descripcion
             )
           ''')
-          .eq('idcontacto', idContacto)
-          .single();
+              .eq('idcontacto', idContacto)
+              .single();
 
       return response;
     } catch (e) {
@@ -130,7 +133,11 @@ class ContactoService {
       throw Exception('Error al crear contacto: $e');
     }
   }
-  static Future<void> updateContacto(int idContacto, Map<String, dynamic> data) async {
+
+  static Future<void> updateContacto(
+    int idContacto,
+    Map<String, dynamic> data,
+  ) async {
     try {
       await _supabase
           .from('contactoempresa')

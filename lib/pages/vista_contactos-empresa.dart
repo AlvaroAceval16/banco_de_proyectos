@@ -3,15 +3,16 @@ import 'package:banco_de_proyectos/classes/contacto_empresa.dart';
 import 'package:banco_de_proyectos/pages/info_contacto-empresa.dart';
 import 'package:flutter/material.dart';
 
-
 class ResumenContactoEmpresaPage extends StatefulWidget {
   const ResumenContactoEmpresaPage({super.key});
 
   @override
-  State<ResumenContactoEmpresaPage> createState() => _ResumenContactoEmpresaPageState();
+  State<ResumenContactoEmpresaPage> createState() =>
+      _ResumenContactoEmpresaPageState();
 }
 
-class _ResumenContactoEmpresaPageState extends State<ResumenContactoEmpresaPage> {
+class _ResumenContactoEmpresaPageState
+    extends State<ResumenContactoEmpresaPage> {
   late Future<List<Map<String, dynamic>>> _obtenerContactosFuture;
   final TextEditingController _searchController = TextEditingController();
 
@@ -91,7 +92,9 @@ class _ResumenContactoEmpresaPageState extends State<ResumenContactoEmpresaPage>
                     } else if (snapshot.hasError) {
                       return Center(child: Text('Error: ${snapshot.error}'));
                     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return const Center(child: Text('No hay contactos disponibles.'));
+                      return const Center(
+                        child: Text('No hay contactos disponibles.'),
+                      );
                     }
 
                     final contactos = snapshot.data!;
@@ -120,11 +123,18 @@ class _ResumenContactoEmpresaPageState extends State<ResumenContactoEmpresaPage>
                             trailing: const Icon(Icons.arrow_forward, size: 20),
                             onTap: () {
                               // Navegación corregida con nombre de ruta
-                              Navigator.pushNamed(
+                              Navigator.push(
                                 context,
-                                '/info_contacto_empresa',
-                                arguments: contacto.idcontacto,
-                              );
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => InfoContactoEmpresa(
+                                        contacto: contacto,
+                                      ),
+                                ),
+                              ).then((_) {
+                                // Esto se ejecuta cuando regresas de InfoContactoEmpresa
+                                _fetchContacts(); // Recarga la lista por si hubo cambios
+                              });
                             },
                           ),
                         );
@@ -137,7 +147,8 @@ class _ResumenContactoEmpresaPageState extends State<ResumenContactoEmpresaPage>
           ),
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () => Navigator.pushNamed(context, '/form_contacto_empresa'),
+          onPressed:
+              () => Navigator.pushNamed(context, '/form_contacto_empresa'),
           backgroundColor: const Color(0xFF5285E8),
           foregroundColor: Colors.white,
           shape: const CircleBorder(),
