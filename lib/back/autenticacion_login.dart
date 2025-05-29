@@ -3,22 +3,22 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class AutenticacionLogin {
   final SupabaseClient _supabase = Supabase.instance.client;
 
-  Future<String?> login(String email, String password) async {
+  Future<String?> login(String correo, String contrasena) async {
     try {
-      final response = await _supabase.auth.signInWithPassword(
-        email: email,
-        password: password,
-      );
-      if (response.user != null) {
+      final response = await _supabase
+          .from('usuarios')
+          .select()
+          .eq('correo', correo)
+          .eq('contrasena', contrasena)
+          .maybeSingle(); 
+
+      if (response != null) {
         return null; 
       } else {
-        return 'No se pudo iniciar sesión.';
+        return 'Correo o contraseña incorrectos.';
       }
-    } on AuthException catch (e) {
-      return e.message;
     } catch (e) {
-      return 'Error inesperado: $e';
+      return 'Error al intentar iniciar sesión: $e';
     }
   }
 }
-

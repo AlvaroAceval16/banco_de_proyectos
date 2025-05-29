@@ -17,13 +17,13 @@ class _LoginPageState extends State<LoginPage> {
   final AutenticacionLogin autenticacionLogin = AutenticacionLogin();
 
   void handledLogin() async {
+    final correo = emailController.text.trim();
+    final contrasena = passwordController.text;
 
-    final email = emailController.text.trim();
-    final password = passwordController.text;
-
-    final error = await autenticacionLogin.login(email, password);
+    final error = await autenticacionLogin.login(correo, contrasena);
 
     if (error == null) {
+      
       Navigator.pushReplacementNamed(context, '/dashboard');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
