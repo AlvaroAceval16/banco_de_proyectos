@@ -13,14 +13,6 @@ class ResumenContactoEmpresaPage extends StatefulWidget {
 class _ResumenContactoEmpresaPageState extends State<ResumenContactoEmpresaPage> {
   late Future<List<Map<String, dynamic>>> _obtenerContactosFuture;
 
-  final Map<String, bool> filtros = {
-    'Empresa A': true,
-    'Empresa B': true,
-    'Empresa C': true,
-    'Empresa D': true,
-    'Empresa E': true,
-  };
-
   @override
   void initState() {
     super.initState();
@@ -44,49 +36,7 @@ class _ResumenContactoEmpresaPageState extends State<ResumenContactoEmpresaPage>
           child: SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Filtros',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  _buildSectionTitle('Empresa'),
-                  ...filtros.keys.map(_buildSwitchTile).toList(),
-                  const Spacer(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () => setState(() {}),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-                        child: const Text('Aplicar'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            filtros.updateAll((key, value) => true);
-                          });
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey.shade400,
-                        ),
-                        child: const Text('Cancelar'),
-                      ),
-                    ],
-                  )
-                ],
-              ),
+              
             ),
           ),
         ),
@@ -97,14 +47,6 @@ class _ResumenContactoEmpresaPageState extends State<ResumenContactoEmpresaPage>
             icon: const Icon(Icons.arrow_back),
             onPressed: () => Navigator.pushNamed(context, '/dashboard'),
           ),
-          actions: [
-            Builder(
-              builder: (context) => IconButton(
-                icon: const Icon(Icons.tune),
-                onPressed: () => Scaffold.of(context).openDrawer(),
-              ),
-            ),
-          ],
         ),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -197,16 +139,4 @@ class _ResumenContactoEmpresaPageState extends State<ResumenContactoEmpresaPage>
     );
   }
 
-  Widget _buildSwitchTile(String label) {
-    return SwitchListTile(
-      title: Text(label),
-      value: filtros[label]!,
-      onChanged: (val) {
-        setState(() {
-          filtros[label] = val;
-        });
-      },
-      activeColor: Colors.green,
-    );
-  }
 }
