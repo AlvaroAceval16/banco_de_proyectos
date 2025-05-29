@@ -11,8 +11,10 @@ class ResumenProyectosPage extends StatefulWidget {
 }
 
 class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
-  late Future<List<Map<String, dynamic>>> _obtenerProyectosFuture;
+  late Future<List<Proyecto>> _obtenerProyectosFuture;
 
+  // Los filtros iniciales deben estar todos en 'true' para que el usuario pueda desactivarlos
+  // Pero la carga INICIAL no usa estos filtros hasta que se presiona "Aplicar"
   final Map<String, bool> filtros = {
     'Activo': true,
     'En Proceso': true,
@@ -24,10 +26,82 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
     'Ago-Dic': true,
   };
 
+  final TextEditingController _searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
-    _obtenerProyectosFuture = ProyectoService.obtenerProyectos();
+    // Al iniciar, cargamos *todos* los proyectos visibles.
+    // Esto significa que los filtros de estado/modalidad/periodo se envían como null o vacíos.
+    _obtenerProyectosFuture = ProyectoService.obtenerProyectosConFiltros(
+      searchTerm: _searchController.text.trim().isNotEmpty ? _searchController.text.trim() : null,
+      // No se pasan filtros de estado, modalidad o periodo inicialmente
+      // para que el backend no los aplique.
+      filtrosEstado: null,
+      filtrosModalidad: null,
+      filtrosPeriodo: null,
+    );
+    // No necesitamos un listener para _onSearchChanged si solo aplicamos en onSubmitted o con el botón
+    // _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    // Si no usas _onSearchChanged, puedes quitar el removeListener
+    // _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  // Este método ahora se encarga de aplicar los filtros *solo cuando se le llama explícitamente*
+  void _applyFilters() {
+    setState(() {
+      List<String> estadosActivos = [];
+      if (filtros['Activo']!) estadosActivos.add('Activo');
+      if (filtros['En Proceso']!) estadosActivos.add('En Proceso');
+      if (filtros['Finalizado']!) estadosActivos.add('Finalizado');
+
+      List<String> modalidadesActivas = [];
+      if (filtros['Presencial']!) modalidadesActivas.add('Presencial');
+      if (filtros['En Línea']!) modalidadesActivas.add('En Línea');
+      if (filtros['Híbrido']!) modalidadesActivas.add('Híbrido');
+
+      List<String> periodosActivos = [];
+      if (filtros['Ene-Jun']!) periodosActivos.add('Ene-Jun');
+      if (filtros['Ago-Dic']!) periodosActivos.add('Ago-Dic');
+
+      String searchTerm = _searchController.text.trim();
+
+      print('--- Aplicando Filtros ---');
+      print('Filtros Estado: $estadosActivos');
+      print('Filtros Modalidad: $modalidadesActivas');
+      print('Filtros Periodo: $periodosActivos');
+      print('Término de Búsqueda: "$searchTerm"');
+      print('-------------------------');
+
+      _obtenerProyectosFuture = ProyectoService.obtenerProyectosConFiltros(
+        filtrosEstado: estadosActivos.isNotEmpty ? estadosActivos : null,
+        filtrosModalidad: modalidadesActivas.isNotEmpty ? modalidadesActivas : null,
+        filtrosPeriodo: periodosActivos.isNotEmpty ? periodosActivos : null,
+        searchTerm: searchTerm.isNotEmpty ? searchTerm : null,
+      );
+    });
+  }
+
+  // Restablece todos los filtros en el UI y recarga los proyectos sin filtros
+  void _resetFilters() {
+    setState(() {
+      filtros.updateAll((key, value) => true); // Activa todos los switches en el UI
+      _searchController.clear(); // Limpia el campo de búsqueda
+      // Recarga los proyectos sin aplicar ningún filtro específico, solo el activo=true por defecto
+      _obtenerProyectosFuture = ProyectoService.obtenerProyectosConFiltros(
+        filtrosEstado: null,
+        filtrosModalidad: null,
+        filtrosPeriodo: null,
+        searchTerm: null,
+      );
+    });
+    Navigator.pop(context); // Cierra el Drawer
   }
 
   @override
@@ -63,7 +137,7 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
                   _buildSwitchTile('Híbrido'),
                   const SizedBox(height: 8),
                   _buildSectionTitle('Periodo'),
-                  const Text('2025'),
+                  const Text('2025'), // Esto es un texto fijo, no un filtro
                   _buildSwitchTile('Ene-Jun'),
                   _buildSwitchTile('Ago-Dic'),
                   const Spacer(),
@@ -96,23 +170,23 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
               _buildSearchField(),
               const SizedBox(height: 16),
               Expanded(
-                child: FutureBuilder<List<Map<String, dynamic>>>(
+                child: FutureBuilder<List<Proyecto>>(
                   future: _obtenerProyectosFuture,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
                     } else if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
+                      print('Error en FutureBuilder: ${snapshot.error}'); // Depuración
+                      return Center(child: Text('Error al cargar proyectos: ${snapshot.error}'));
                     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return const Center(child: Text('No hay proyectos disponibles.'));
+                      return const Center(child: Text('No hay proyectos disponibles con los filtros aplicados.'));
                     }
 
                     final proyectos = snapshot.data!;
                     return ListView.builder(
                       itemCount: proyectos.length,
                       itemBuilder: (context, index) {
-                        final proyectoMap = proyectos[index];
-                        final proyecto = Proyecto.fromMap(proyectoMap);
+                        final proyecto = proyectos[index];
                         return Card(
                           color: Theme.of(context).cardColor,
                           elevation: 0,
@@ -207,22 +281,23 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         ElevatedButton(
-          onPressed: () => setState(() {}),
+          onPressed: () {
+            _applyFilters(); // <--- Llama al nuevo método para aplicar filtros
+            Navigator.pop(context); // Cierra el Drawer
+          },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.blue,
-          ),
+        ),
           child: const Text('Aplicar'),
         ),
         ElevatedButton(
           onPressed: () {
-            setState(() {
-              filtros.updateAll((key, value) => true);
-            });
+            _resetFilters(); // Llama al método para restablecer filtros
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.grey.shade400,
           ),
-          child: const Text('Cancelar'),
+          child: const Text('Restablecer'),
         ),
       ],
     );
@@ -230,6 +305,7 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
 
   Widget _buildSearchField() {
     return TextField(
+      controller: _searchController,
       decoration: InputDecoration(
         hintText: 'Busca tus proyectos...',
         prefixIcon: const Icon(Icons.search),
@@ -240,6 +316,9 @@ class _ResumenProyectosPageState extends State<ResumenProyectosPage> {
           borderSide: BorderSide.none,
         ),
       ),
+      onSubmitted: (value) {
+        _applyFilters(); // <--- Llama a _applyFilters al presionar Enter en el campo de búsqueda
+      },
     );
   }
 }
