@@ -1,8 +1,13 @@
+import 'package:banco_de_proyectos/back/logica_contactoEmpresa.dart';
+import 'package:banco_de_proyectos/classes/contacto_empresa.dart';
 import 'package:flutter/material.dart';
 
-void main() => runApp(InfoContactoEmpresaApp());
-
 class InfoContactoEmpresaApp extends StatelessWidget {
+
+  final ContactoEmpresa contacto;
+
+  const InfoContactoEmpresaApp({Key? key, required this.contacto}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
