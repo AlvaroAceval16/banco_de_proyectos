@@ -79,6 +79,18 @@ class ProyectoService {
     }
   }
 
+  static Future<List<Map<String, dynamic>>> obtenerProyectosOrdenadosPorFecha() async {
+  try {
+    final response = await _supabase
+        .from('proyectos')
+        .select('*')
+        .order('fechasolicitud', ascending: false); 
+    return List<Map<String, dynamic>>.from(response);
+  } catch (e) {
+    throw Exception('Error al cargar proyectos: $e');
+  }
+}
+
   Future<Map<String, dynamic>> guardarProyecto({
   required String nombre,
   required String descripcion,
