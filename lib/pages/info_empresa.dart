@@ -190,9 +190,11 @@ class _InfoEmpresaState extends State<InfoEmpresa> {
 
   @override
   Widget build(BuildContext context) {
+    // Add this variable to easily check the 'tiene_convenio' status
+    final bool tieneConvenio = _empresaData?['convenio'] ?? false;
+
     return Scaffold(
       backgroundColor: const Color(0xFF002A5C),
-      // New: Add an AppBar for the delete button
       appBar: AppBar(
         backgroundColor: const Color(0xFF002A5C),
         elevation: 0,
@@ -238,7 +240,6 @@ class _InfoEmpresaState extends State<InfoEmpresa> {
                   Expanded(
                     child: ListView(
                       children: [
-                        // Parte azul superior (removed AppBar content as it's now in actual AppBar)
                         Container(
                           decoration: const BoxDecoration(
                             color: Color(0xFF002A5C),
@@ -249,41 +250,60 @@ class _InfoEmpresaState extends State<InfoEmpresa> {
                           padding: const EdgeInsets.symmetric(
                             horizontal: 20,
                             vertical: 0,
-                          ), // Adjust vertical padding
+                          ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // No need for Icon(Icons.arrow_back) here anymore
-                              // It's in the AppBar now
-                              const SizedBox(
-                                height: 20,
-                              ), // Add some space if needed
-                              _isEditing
-                                  ? TextField(
-                                    controller: _nombreController,
-                                    style: const TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                      fontFamily: 'Poppins',
-                                      color: Colors.white,
-                                    ),
-                                    decoration: const InputDecoration(
-                                      hintText: 'Nombre de la empresa',
-                                      hintStyle: TextStyle(
-                                        color: Colors.white70,
-                                      ),
-                                      border: InputBorder.none,
-                                    ),
-                                  )
-                                  : Text(
-                                    _nombreController.text,
-                                    style: const TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                      fontFamily: 'Poppins',
-                                      color: Colors.white,
-                                    ),
+                              const SizedBox(height: 20),
+                              // Modified: Display company name with verified icon
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child:
+                                        _isEditing
+                                            ? TextField(
+                                              controller: _nombreController,
+                                              style: const TextStyle(
+                                                fontSize: 22,
+                                                fontWeight: FontWeight.bold,
+                                                fontFamily: 'Poppins',
+                                                color: Colors.white,
+                                              ),
+                                              decoration: const InputDecoration(
+                                                hintText:
+                                                    'Nombre de la empresa',
+                                                hintStyle: TextStyle(
+                                                  color: Colors.white70,
+                                                ),
+                                                border: InputBorder.none,
+                                              ),
+                                            )
+                                            : Text(
+                                              _nombreController.text,
+                                              style: const TextStyle(
+                                                fontSize: 22,
+                                                fontWeight: FontWeight.bold,
+                                                fontFamily: 'Poppins',
+                                                color: Colors.white,
+                                              ),
+                                            ),
                                   ),
+                                  if (tieneConvenio && !_isEditing)
+                                    const Padding(
+                                      padding: EdgeInsets.only(left: 8.0),
+                                      child: Icon(
+                                        Icons.verified,
+                                        color: Color.fromARGB(
+                                          255,
+                                          255,
+                                          255,
+                                          255,
+                                        ), // Or any color you prefer
+                                        size: 24,
+                                      ),
+                                    ),
+                                ],
+                              ),
                               const SizedBox(height: 10),
                               _isEditing
                                   ? TextField(

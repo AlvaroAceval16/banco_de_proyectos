@@ -17,7 +17,7 @@ class EmpresaService {
     required String direccion,
     required String telefono,
     required String fecha_registro,
-    bool convenio = true,
+    required bool convenio,
   }) async {
     try {
       if (sector == null || tamano == null) {
