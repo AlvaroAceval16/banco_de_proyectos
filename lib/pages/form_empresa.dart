@@ -2,8 +2,14 @@ import 'package:banco_de_proyectos/back/logica_empresas.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+// These global variables are generally discouraged in larger apps
+// but kept here for consistency with your provided snippet.
 final supabase = Supabase.instance.client;
 final _empresaService = EmpresaService();
+
+// The main function and MaterialApp are typically in main.dart
+// I'm keeping them here for completeness as per your example,
+// but if this is a sub-page, you'd remove them.
 void main() => runApp(FormularioEmpresaApp());
 
 class FormularioEmpresaApp extends StatelessWidget {
@@ -31,15 +37,70 @@ class _FormularioEmpresaState extends State<FormularioEmpresa> {
   final TextEditingController rfcController = TextEditingController();
   final TextEditingController cpController = TextEditingController();
   final TextEditingController direccionController = TextEditingController();
+  final TextEditingController telefonoController =
+      TextEditingController(); // NEW: Phone Controller
+  final TextEditingController otroPaisController =
+      TextEditingController(); // NEW: Otro País Controller
+  final TextEditingController ciudadManualController =
+      TextEditingController(); // NEW: Ciudad Manual Controller
+  final TextEditingController estadoManualController =
+      TextEditingController(); // NEW: Estado Manual Controller
 
   String? sectorSeleccionado;
   String? tamanoSeleccionado;
-  String? estadoSeleccionado;
-  String? ciudadSeleccionada;
+  String? estadoSeleccionado; // Used for Mexico
+  String? ciudadSeleccionada; // Used for Mexico
+  String? paisSeleccionado = "México"; // NEW: Default to México
+
+  bool _tieneConvenio = false; // Checkbox state
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize controllers with empty text
+    nombreEmpresaController.text = '';
+    descripcionController.text = '';
+    giroController.text = '';
+    rfcController.text = '';
+    cpController.text = '';
+    direccionController.text = '';
+    telefonoController.text = '';
+    otroPaisController.text = '';
+    ciudadManualController.text = '';
+    estadoManualController.text = '';
+  }
+
+  @override
+  void dispose() {
+    nombreEmpresaController.dispose();
+    descripcionController.dispose();
+    giroController.dispose();
+    rfcController.dispose();
+    cpController.dispose();
+    direccionController.dispose();
+    telefonoController.dispose(); // Dispose phone controller
+    otroPaisController.dispose(); // Dispose otroPais controller
+    ciudadManualController.dispose(); // Dispose ciudadManual controller
+    estadoManualController.dispose(); // Dispose estadoManual controller
+    super.dispose();
+  }
 
   Future<void> guardarEmpresa() async {
     if (_formKey.currentState!.validate()) {
       try {
+        String finalPais =
+            paisSeleccionado == "Extranjero"
+                ? otroPaisController.text
+                : "México";
+        String finalCiudad =
+            paisSeleccionado == "Extranjero"
+                ? ciudadManualController.text
+                : (ciudadSeleccionada ?? "N/A");
+        String finalEstado =
+            paisSeleccionado == "Extranjero"
+                ? estadoManualController.text
+                : (estadoSeleccionado ?? "N/A");
+
         await _empresaService.guardarEmpresa(
           nombre: nombreEmpresaController.text,
           descripcion: descripcionController.text,
@@ -48,24 +109,33 @@ class _FormularioEmpresaState extends State<FormularioEmpresa> {
           tamano: tamanoSeleccionado,
           rfc: rfcController.text,
           cp: cpController.text,
-          pais: "México", // Asumiendo que el país es México
-          ciudad: ciudadSeleccionada ?? "Ciudad no seleccionada",
-          estado: estadoSeleccionado ?? "Estado no seleccionado",
+          pais: finalPais, // Dynamic country
+          ciudad: finalCiudad, // Dynamic city
+          estado: finalEstado, // Dynamic state
           direccion: direccionController.text,
-          telefono: "1234567890", // Placeholder
+          telefono: telefonoController.text, // Use actual phone
           fecha_registro: DateTime.now().toIso8601String(),
-          convenio: true,
+          convenio: _tieneConvenio,
         );
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('✅ Empresa guardada correctamente')),
         );
 
-        // Opcional: Limpiar el formulario después de guardar
         _formKey.currentState?.reset();
-
-        // Opcional: Navegar a otra pantalla
-        // Navigator.pop(context);
+        setState(() {
+          sectorSeleccionado = null;
+          tamanoSeleccionado = null;
+          estadoSeleccionado = null;
+          ciudadSeleccionada = null;
+          paisSeleccionado = "México"; // Reset country to Mexico
+          _tieneConvenio = false;
+          // Clear manual text controllers
+          otroPaisController.text = '';
+          ciudadManualController.text = '';
+          estadoManualController.text = '';
+          telefonoController.text = '';
+        });
       } catch (e) {
         ScaffoldMessenger.of(
           context,
@@ -155,27 +225,104 @@ class _FormularioEmpresaState extends State<FormularioEmpresa> {
                 },
               ),
               _campoTexto("RFC", "ABC123456789", rfcController),
+              _campoTexto(
+                "Teléfono",
+                "Ej. 5512345678",
+                telefonoController,
+                keyboardType: TextInputType.phone,
+              ), // NEW: Phone field
+              // Checkbox for convenio
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Row(
+                  children: [
+                    Checkbox(
+                      value: _tieneConvenio,
+                      onChanged: (bool? newValue) {
+                        setState(() {
+                          _tieneConvenio = newValue ?? false;
+                        });
+                      },
+                      activeColor: Color(0xFF4A90E2),
+                    ),
+                    const Text(
+                      "Tiene Convenio",
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
 
               _seccion("Ubicación"),
+              // NEW: País ComboBox
+              _comboBox(
+                "País",
+                "Seleccionar País",
+                paisSeleccionado,
+                ["México", "Extranjero"],
+                (val) {
+                  setState(() {
+                    paisSeleccionado = val;
+                    // Reset city/state selections if country changes
+                    if (val == "Extranjero") {
+                      estadoSeleccionado = null;
+                      ciudadSeleccionada = null;
+                    } else {
+                      otroPaisController.text = ''; // Clear other country field
+                      ciudadManualController.text = '';
+                      estadoManualController.text = '';
+                    }
+                  });
+                },
+              ),
+              // NEW: Conditional "Cual?" field for Extranjero
+              if (paisSeleccionado == "Extranjero")
+                _campoTexto(
+                  "¿Cuál país?",
+                  "Ej. Estados Unidos",
+                  otroPaisController,
+                ),
+
               _campoTexto("CP", "58000", cpController),
-              _comboBox(
-                "Estado",
-                "Seleccionar",
-                estadoSeleccionado,
-                ["Michoacán", "Jalisco", "CDMX", "Nuevo León"],
-                (val) {
-                  setState(() => estadoSeleccionado = val);
-                },
-              ),
-              _comboBox(
-                "Ciudad",
-                "Seleccionar",
-                ciudadSeleccionada,
-                ["Morelia", "Guadalajara", "Monterrey", "CDMX"],
-                (val) {
-                  setState(() => ciudadSeleccionada = val);
-                },
-              ),
+
+              // NEW: Conditional fields for Estado and Ciudad
+              if (paisSeleccionado == "México") ...[
+                _comboBox(
+                  "Estado",
+                  "Seleccionar",
+                  estadoSeleccionado,
+                  ["Michoacán", "Jalisco", "CDMX", "Nuevo León"],
+                  (val) {
+                    setState(() => estadoSeleccionado = val);
+                  },
+                ),
+                _comboBox(
+                  "Ciudad",
+                  "Seleccionar",
+                  ciudadSeleccionada,
+                  ["Morelia", "Guadalajara", "Monterrey", "CDMX"],
+                  (val) {
+                    setState(() => ciudadSeleccionada = val);
+                  },
+                ),
+              ] else ...[
+                _campoTexto(
+                  "Estado/Provincia (Extranjero)",
+                  "Ej. California",
+                  estadoManualController,
+                ),
+                _campoTexto(
+                  "Ciudad (Extranjero)",
+                  "Ej. Los Ángeles",
+                  ciudadManualController,
+                ),
+              ],
+
               _campoTexto(
                 "Dirección",
                 "Av. Tecnológico 1234",
