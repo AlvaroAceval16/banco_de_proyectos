@@ -1,4 +1,6 @@
 // lib/back/logica_asignaciones.dart
+import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 // lib/back/logica_asignaciones.dart
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -8,7 +10,6 @@ class AsignacionService {
   final SupabaseClient _supabase = Supabase.instance.client;
   final ProyectoService _proyectoService = ProyectoService(); // Instancia de ProyectoService
 
-  // Helper para mapear el estado de asignación a estado de proyecto
   String _mapAsignacionEstadoToProyectoEstado(String asignacionEstado) {
     switch (asignacionEstado) {
       case 'En curso':
@@ -16,21 +17,41 @@ class AsignacionService {
       case 'Finalizado':
         return 'Concluido';
       default:
-        // Puedes definir un estado por defecto o lanzar un error si el estado no es válido
-        return 'Abierto'; // Por ejemplo, si no coincide con 'En curso' o 'Finalizado'
+        return 'Abierto'; 
     }
   }
 
   // CREATE - Crear una nueva asignación
-  Future<Map<String, dynamic>> crearAsignacion({
+  Future<Map<String, dynamic>?> crearAsignacion({
+    required BuildContext context,
     required int idProyecto,
     required int idEstudiante,
     required int idTutor,
-    String? fechaAsignacion, // Formato 'YYYY-MM-DD'
-    String? fechaFinalizacion, // Formato 'YYYY-MM-DD', opcional
-    required String estado, // 'En curso' o 'Finalizado'
+    String? fechaAsignacion,
+    String? fechaFinalizacion,
+    required String estado,
   }) async {
     try {
+      final asignacionesMismoProyecto = await _supabase
+          .from('asignaciones')
+          .select()
+          .eq('idproyecto', idProyecto)
+          .eq('idestudiante', idEstudiante);
+
+      if (asignacionesMismoProyecto.isNotEmpty) {
+        return {
+          'error': 'Este estudiante ya tiene asignado este proyecto.'
+        };
+      }
+
+      final asignacionesNoFinalizadas = await _supabase
+          .from('asignaciones')
+          .select()
+          .eq('idestudiante', idEstudiante)
+          .neq('estado', 'finalizado');
+
+      bool hayAdvertencia = asignacionesNoFinalizadas.isNotEmpty;
+
       final response = await _supabase
           .from('asignaciones')
           .insert({
@@ -44,33 +65,23 @@ class AsignacionService {
             'estado': estado,
           })
           .select()
-          .single(); // Retorna la asignación creada
+          .single();
 
-      print('Asignación creada exitosamente: $response');
+      final newEstadoProyecto = _mapAsignacionEstadoToProyectoEstado(estado);
+      await _proyectoService.actualizarEstadoProyecto(idProyecto, newEstadoProyecto);
 
-      // --- ACTUALIZAR EL ESTADO DEL PROYECTO ---
-      final newProyectoEstado = _mapAsignacionEstadoToProyectoEstado(estado);
-      await _proyectoService.actualizarEstadoProyecto(
-        idProyecto,
-        newProyectoEstado,
-      );
-      print('Estado del proyecto $idProyecto actualizado a: $newProyectoEstado');
-      // --- FIN ACTUALIZACIÓN ESTADO PROYECTO ---
-
-      return response;
-    } on PostgrestException catch (e) {
-      print('❌ Error de PostgREST al crear asignación: ${e.message}');
-      throw Exception(
-        'Error de base de datos al crear asignación: ${e.message}',
-      );
+      return {
+        'data': response,
+        if (hayAdvertencia)
+          'advertencia': 'Este estudiante ya tiene un proyecto asignado que no ha finalizado.',
+      };
     } catch (e) {
-      print('❌ Error inesperado al crear asignación: $e');
-      throw Exception('Error al crear asignación: ${e.toString()}');
+      return {
+        'error': '❌ Error al crear asignación: ${e.toString()}'
+      };
     }
   }
 
-  // READ - Obtener una asignación por su ID (para edición)
-  // ... (este método no necesita cambios)
   Future<Map<String, dynamic>?> obtenerAsignacionPorId(int idAsignacion) async {
     try {
       final response =
@@ -95,7 +106,6 @@ class AsignacionService {
     }
   }
 
-  // UPDATE - Actualizar una asignación existente
   Future<void> actualizarAsignacion(
     int idAsignacion,
     Map<String, dynamic> newData,
@@ -107,13 +117,8 @@ class AsignacionService {
           .eq('idasignacion', idAsignacion);
       print('Asignación actualizada exitosamente!');
 
-      // --- ACTUALIZAR EL ESTADO DEL PROYECTO ---
-      // Si el campo 'estado' está en newData, y si el idproyecto está presente,
-      // actualiza el estado del proyecto.
       if (newData.containsKey('estado')) {
-        // Necesitamos el idProyecto de la asignación.
-        // Primero, obtenemos la asignación si no tenemos el idProyecto en newData.
-        // Esto es crucial para saber qué proyecto actualizar.
+        
         final asignacionExistente = await obtenerAsignacionPorId(idAsignacion);
         if (asignacionExistente != null && asignacionExistente.containsKey('idproyecto')) {
           final int idProyecto = asignacionExistente['idproyecto'];
@@ -129,7 +134,6 @@ class AsignacionService {
           print('Advertencia: No se pudo encontrar el idProyecto para la asignación $idAsignacion o el estado no está en newData.');
         }
       }
-      // --- FIN ACTUALIZACIÓN ESTADO PROYECTO ---
 
     } on PostgrestException catch (e) {
       print('❌ Error de PostgREST al actualizar asignación: ${e.message}');
@@ -162,8 +166,6 @@ class AsignacionService {
     }
   }
 
-  // --- Métodos para obtener datos para Dropdowns ---
-  // ... (estos métodos no necesitan cambios)
   static Future<List<Map<String, dynamic>>> obtenerProyectosParaDropdown() async {
     try {
       final response = await Supabase.instance.client

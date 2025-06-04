@@ -181,60 +181,82 @@ class _FormAsignacionesState extends State<FormAsignaciones> {
         _isLoading = true;
         _errorMessage = null;
       });
+
       try {
         if (widget.idAsignacion == null) {
-          // Modo creación
-          await _asignacionService.crearAsignacion(
+          final resultado = await _asignacionService.crearAsignacion(
+            context: context,
             idProyecto: _selectedProyectoId!,
             idEstudiante: _selectedEstudianteId!,
             idTutor: _selectedTutorId!,
             estado: _selectedEstado!,
-            fechaAsignacion:
-                _fechaAsignacionController.text.isNotEmpty
-                    ? _fechaAsignacionController.text
-                    : null, // Si está vacío, la DB usará el DEFAULT
-            fechaFinalizacion:
-                _fechaFinalizacionController.text.isNotEmpty
-                    ? _fechaFinalizacionController.text
-                    : null,
+            fechaAsignacion: _fechaAsignacionController.text.isNotEmpty
+                ? _fechaAsignacionController.text
+                : null,
+            fechaFinalizacion: _fechaFinalizacionController.text.isNotEmpty
+                ? _fechaFinalizacionController.text
+                : null,
           );
+
+          if (resultado == null || resultado.containsKey('error')) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(resultado?['error'] ?? '❌ Error desconocido'),
+                backgroundColor: Colors.red,
+                ),
+            );
+            return;
+          }
+
+          // Mostrar advertencia si aplica
+          if (resultado.containsKey('advertencia')) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(resultado['advertencia']),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+
+          // Mensaje de éxito
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('✅ Asignación creada exitosamente!')),
+            const SnackBar(
+              content: Text('✅ Asignación creada exitosamente!'),
+              backgroundColor: Colors.green,
+            ),
           );
+
+          Navigator.pop(context, true);
+
         } else {
-          // Modo edición
+          // Edición
           final Map<String, dynamic> updates = {
             'idproyecto': _selectedProyectoId,
             'idestudiante': _selectedEstudianteId,
             'idtutor': _selectedTutorId,
             'estado': _selectedEstado,
-            'fechaasignacion':
-                _fechaAsignacionController.text.isNotEmpty
-                    ? _fechaAsignacionController.text
-                    : null,
-            'fechafinalizacion':
-                _fechaFinalizacionController.text.isNotEmpty
-                    ? _fechaFinalizacionController.text
-                    : null,
+            'fechaasignacion': _fechaAsignacionController.text.isNotEmpty
+                ? _fechaAsignacionController.text
+                : null,
+            'fechafinalizacion': _fechaFinalizacionController.text.isNotEmpty
+                ? _fechaFinalizacionController.text
+                : null,
           };
-          await _asignacionService.actualizarAsignacion(
-            widget.idAsignacion!,
-            updates,
-          );
+          await _asignacionService.actualizarAsignacion(widget.idAsignacion!, updates);
+
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('✅ Asignación actualizada exitosamente!'),
+              backgroundColor: Colors.green,
             ),
           );
+          Navigator.pop(context, true);
         }
-        Navigator.pop(context, true); // Regresar a la pantalla anterior
+
       } catch (e) {
-        setState(() {
-          _errorMessage = 'Error al guardar asignación: ${e.toString()}';
-        });
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('❌ Error: ${e.toString()}')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('❌ Error inesperado: ${e.toString()}')),
+        );
       } finally {
         setState(() {
           _isLoading = false;
@@ -244,7 +266,6 @@ class _FormAsignacionesState extends State<FormAsignaciones> {
   }
 
   // --- Widgets Auxiliares ---
-
   Widget _seccion(String titulo) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
